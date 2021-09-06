@@ -28,14 +28,14 @@ Frankly, I think most of this stuff should be scoped to companion mods. A great 
 ## Feature Map
 - [x] Belly bloating from food.
 - [x] Digestion to calories - Calories are distributed over the weight gain simulation.
-- [ ] Accelerate metabolism while sleeping
+- [x] Accelerate metabolism while sleeping
 - [ ] Accelerate metabolism after running
 - [ ] Belly limit. Overeating damages you, levels up capacity
 - [ ] Fatness grants damage reduction
 - [ ] Fatness makes you slower
 - [ ] Digesting grants temporary health regeneration
 - [x] Weight Gain: Distribute calories to breasts
-- [ ] Weight Gain: Distribute calories to butt
+- [x] Weight Gain: Distribute calories to butt
 - [ ] Strength: More damage from stomach acid. More muscle growth.
 - [ ] Perception: Digest faster and have higher regeneration
 - [ ] Endurance: More belly capacity

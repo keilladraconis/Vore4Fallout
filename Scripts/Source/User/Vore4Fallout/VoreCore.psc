@@ -6,19 +6,33 @@ MagicEffect Property HealthFoodME Auto Const
 
 float TickRate
 float SimRate
+float ConsumeVolume
 float CalorieDensity
 float DigestionRate
 float MetabolicRate
+float SleepStart
 
 Function Initialize()
     TickRate = 1.0 / 1.0 ; ticks per second. Increasting numerator lowers resolution. Increasing denominator increases resolution.
     SimRate = TickRate / 1.0 ; Sims per Tick. Increasing denominator beyond 1 accelerates simulation. Decreasing it below 1 decelerates simulation. 
-    ; If the full belly is 1.25 feet in radius, 8 cubic feet, or 60 gallons, then at 2400 calories per gallon a full belly of milk would be 13800 calories.
-    CalorieDensity = 13800.0 ; How many calories are in a full stomach? Increasing this increases the rate of weight gain. 
+    ; If the belly 100% volume is 60 gallons, and each food is about a gallon, then the volume expressed as a percent should be 1.6%.
+    ConsumeVolume = 0.016 ; Volume of each food, in belly percentage.
+    ; If the full belly is 1.25 feet in radius, 8 cubic feet, or 60 gallons, then at 2400 calories per gallon a full belly of milk would be 144000 calories.
+    CalorieDensity = 144000.0 ; How many calories are in a full stomach? Increasing this increases the rate of weight gain. 
     ;  An adult human runs at 2500 calories per day, in 20 minute fallout days, that is 2.08 calories per second.
     MetabolicRate = 2.08 / SimRate ; calories burned per sim tick. Increase too much and you cannot get fat.
     ; Digesting at a rate of 1 full belly per 8 hours is 0.0025
-    DigestionRate = 0.0025 / SimRate ; How much do you digest per sim tick? If DigestionRate * CalorieDensity < MetabolicRate, you never gain weight. 
+    DigestionRate = 0.0034 / SimRate ; How much do you digest per sim tick? If DigestionRate * CalorieDensity < MetabolicRate, you never gain weight. 
+EndFunction
+
+Function DebugRates()
+    ; Speed everything up for debugging/testing purposes.
+    TickRate = 1.0 / 60.0
+    SimRate = 1.0
+    ConsumeVolume = 0.1
+    CalorieDensity = 144000.0
+    MetabolicRate = 5
+    DigestionRate = 1
 EndFunction
 
 Struct VoreData
@@ -47,10 +61,11 @@ Function Main()
 	; 	Data = new VoreData
 	; EndIf
     Initialize()
-    
+    ; DebugRates()
     UpdateBody()
     Actor player = Game.GetPlayer()
     Self.RegisterForMagicEffectApplyEvent(player, player, HealthFoodME, True)
+    Self.RegisterForPlayerSleep()
     StartTimer(1)
 EndFunction
 
@@ -63,7 +78,16 @@ EndEvent
 
 Event OnTimer(int timerID)
     UpdateBody()
-    StartTimer(0.1)
+    StartTimer(TickRate)
+EndEvent
+
+Event OnPlayerSleepStart(float afSleepStartTime, float afDesiredSleepEndTime, ObjectReference akBed)
+    SleepStart = afSleepStartTime
+EndEvent
+
+Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
+    ; Time is reported as a floating point number where 1 is a whole day. 1 hour is 1/24 expressed as a decimal.
+    Metabolize(Digest((Utility.GetCurrentGameTime() - SleepStart) / (1.0 / 24.0) * 60 * 60))
 EndEvent
 
 Function UpdateBody()
@@ -167,7 +191,7 @@ Function UpdateBody()
 EndFunction
 
 Function HandleFoodEvent(Actor actor)
-    Data.Giantbelly += 0.1
+    Data.Giantbelly += ConsumeVolume
     ; If Data.VoreBelly <= 0
     ;     Data.VoreBelly += 0.5
     ; Else
@@ -175,23 +199,30 @@ Function HandleFoodEvent(Actor actor)
     ; EndIf
 EndFunction
 
-float Function Digest()
-    If Data.VoreBelly > 0
-        Data.VoreBelly -= DigestionRate * 0.01
-        Data.GiantBelly += DigestionRate * 0.02
+float Function Digest(float time = 1.0)
+    If Data.VoreBelly > 0.0
+        Data.VoreBelly -= DigestionRate * 0.01 * time
+        Data.GiantBelly += DigestionRate * 0.02 * time
         return 0.0
-    ElseIf Data.GiantBelly > 0
-        Data.GiantBelly -= DigestionRate * 0.01 
-        return DigestionRate * CalorieDensity
+    ElseIf Data.GiantBelly > 0.0
+        float digestAmount = DigestionRate * 0.01 * time
+        If digestAmount > Data.GiantBelly
+            float actual = Data.GiantBelly
+            Data.GiantBelly = 0.0
+            return actual * CalorieDensity
+        Else
+            Data.GiantBelly -= digestAmount
+            return digestAmount * CalorieDensity
+        EndIf
     Else
-        return 0.0
+        Data.VoreBelly = 0.0
+        Data.GiantBelly = 0.0
+        return -MetabolicRate * time
     EndIf
 
 EndFunction
 
 Function Metabolize(float calories)
-    calories -= MetabolicRate
-
     If calories > 0
         calories = MetabolizeBreasts(calories / 2.0) + MetabolizeButt(calories / 2.0)
         calories = MetabolizeSSBBW(calories)
@@ -202,32 +233,46 @@ Function Metabolize(float calories)
 EndFunction
 
 float Function MetabolizeSSBBW(float calories)
-    If calories > 0 || Data.SSBBW > 0.0
-        Data.SSBBW += (calories / 3500.0) * 0.005 ; 1/2% per pound of calories
-        return 0.0
+    Data.SSBBW += (calories / 3500.0) * 0.005 ; 1/2% per pound of calories
+
+    If Data.SSBBW < 0
+        float excess = Data.SSBBW
+        Data.SSBBW = 0
+        return excess
     Else
-        Data.SSBBW = Math.Max(0.0, Data.SSBBW)
         return calories
     EndIf
 EndFunction
 
 float Function MetabolizeBreasts(float calories)
-    If (calories > 0 || Data.Breasts > 0.0) && Data.Breasts < 1.0
-        Data.Breasts += (calories / 3500) * 0.01
-        return 0.0
+    Data.Breasts += (calories / 3500) * 0.025
+
+    If Data.Breasts > 1.0
+        float excess = Data.Breasts - 1.0
+        Data.Breasts = 1.0
+        return excess * 20 * 3500
+    ElseIf Data.Breasts < 0.0
+        float excess = Data.Breasts
+        Data.Breasts = 0.0
+        return excess * 20 * 3500
     Else
-        Data.Breasts = Clamp(0.0, 1.0, Data.Breasts)
-        return calories
+        return 0.0
     EndIf
 EndFunction
 
 float Function MetabolizeButt(float calories)
-    If (calories > 0 || Data.Butt > 0.0) && Data.Butt < 1.0
-        Data.Butt += (calories / 3500) * 0.01
-        return 0.0
+    Data.Butt += (calories / 3500) * 0.01
+
+    If Data.Butt > 1.0
+        float excess = Data.Butt - 1.0
+        Data.Butt = 1.0
+        return excess * 100 * 3500
+    ElseIf Data.Butt < 0.0
+        float excess = Data.Butt
+        Data.Butt = 0.0
+        return excess * 100 * 3500
     Else
-        Data.Butt = Clamp(0.0, 1.0, Data.Butt)
-        return calories
+        return 0.0
     EndIf
 EndFunction
 
