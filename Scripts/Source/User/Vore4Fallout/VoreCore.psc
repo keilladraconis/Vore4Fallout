@@ -13,9 +13,12 @@ float MetabolicRate
 Function Initialize()
     TickRate = 1.0 / 1.0 ; ticks per second. Increasting numerator lowers resolution. Increasing denominator increases resolution.
     SimRate = TickRate / 1.0 ; Sims per Tick. Increasing denominator beyond 1 accelerates simulation. Decreasing it below 1 decelerates simulation. 
-    CalorieDensity = 2000.0 ; How many calories are in each percentage 'point' of digestion?
-    MetabolicRate = 100.0 / SimRate ; calories per sim tick
-    DigestionRate = 0.1 / SimRate ; points per sim tick. If CalorieDensity * DigestionRate < MetabolicRate you cannot get fat.
+    ; If the full belly is 1.25 feet in radius, 8 cubic feet, or 60 gallons, then at 2400 calories per gallon a full belly of milk would be 13800 calories.
+    CalorieDensity = 13800.0 ; How many calories are in a full stomach? Increasing this increases the rate of weight gain. 
+    ;  An adult human runs at 2500 calories per day, in 20 minute fallout days, that is 2.08 calories per second.
+    MetabolicRate = 2.08 / SimRate ; calories burned per sim tick. Increase too much and you cannot get fat.
+    ; Digesting at a rate of 1 full belly per 8 hours is 0.0025
+    DigestionRate = 0.0025 / SimRate ; How much do you digest per sim tick? If DigestionRate * CalorieDensity < MetabolicRate, you never gain weight. 
 EndFunction
 
 Struct VoreData
@@ -23,6 +26,7 @@ Struct VoreData
     float Giantbelly = 0.0
     float SSBBW = 0.0
     float Breasts = 0.0
+    float Butt = 0.0
 EndStruct
 
 VoreData Data
@@ -63,7 +67,7 @@ Event OnTimer(int timerID)
 EndEvent
 
 Function UpdateBody()
-    Debug.Trace("VB: " + Data.VoreBelly + " GB: " + Data.GiantBelly + " B: " + Data.Breasts + " BBW: " + Data.SSBBW)
+    Debug.Trace("VB: " + Data.VoreBelly + " GB: " + Data.GiantBelly + " B: " + Data.Breasts + " U: " + Data.Butt + " BBW: " + Data.SSBBW)
     Actor player = Game.GetPlayer()
     Metabolize(Digest())
     
@@ -100,6 +104,65 @@ Function UpdateBody()
         Debug.Trace("[Error] Breasts OOB: " + Data.Breasts)
     EndIf
 
+    If Data.Butt >= 0.0 && Data.Butt <= 0.1
+        BodyGen.SetMorph(player, true, "Butt", NONE, Data.Butt / 0.1)
+        BodyGen.SetMorph(player, true, "ChubbyButt", NONE, 0)
+        BodyGen.SetMorph(player, true, "Thighs", NONE, 0)
+        BodyGen.SetMorph(player, true, "Waist", NONE, 0) 
+        BodyGen.SetMorph(player, true, "BigButt", NONE, 0)
+        BodyGen.SetMorph(player, true, "Back", NONE, 0)
+        BodyGen.SetMorph(player, true, "ChubbyLegs", NONE, 0)
+        BodyGen.SetMorph(player, true, "ChubbyWaist", NONE, 0)
+        BodyGen.SetMorph(player, true, "AppleCheeks", NONE, 0)
+        BodyGen.SetMorph(player, true, "RoundAss", NONE, 0)
+    ElseIf Data.Butt > 0.1 && Data.Butt <= 0.2
+        BodyGen.SetMorph(player, true, "Butt", NONE, 1)
+        BodyGen.SetMorph(player, true, "ChubbyButt", NONE, (Data.Butt - 0.1) / 0.1)
+        BodyGen.SetMorph(player, true, "Thighs", NONE, (Data.Butt - 0.1) / 0.1)
+        BodyGen.SetMorph(player, true, "Waist", NONE, (Data.Butt - 0.1) / 0.1) 
+        BodyGen.SetMorph(player, true, "BigButt", NONE, 0)
+        BodyGen.SetMorph(player, true, "Back", NONE, 0)
+        BodyGen.SetMorph(player, true, "ChubbyLegs", NONE, 0)
+        BodyGen.SetMorph(player, true, "ChubbyWaist", NONE, 0)
+        BodyGen.SetMorph(player, true, "AppleCheeks", NONE, 0)
+        BodyGen.SetMorph(player, true, "RoundAss", NONE, 0)
+    ElseIf Data.Butt > 0.2 && Data.Butt <= 0.6
+        BodyGen.SetMorph(player, true, "Butt", NONE, 1)
+        BodyGen.SetMorph(player, true, "ChubbyButt", NONE, 1)
+        BodyGen.SetMorph(player, true, "Thighs", NONE, 1)
+        BodyGen.SetMorph(player, true, "Waist", NONE, 1) 
+        BodyGen.SetMorph(player, true, "BigButt", NONE, (Data.Butt - 0.2) / 0.4)
+        BodyGen.SetMorph(player, true, "Back", NONE, (Data.Butt - 0.2) / 0.4)
+        BodyGen.SetMorph(player, true, "ChubbyLegs", NONE, (Data.Butt - 0.2) / 0.4)
+        BodyGen.SetMorph(player, true, "ChubbyWaist", NONE, (Data.Butt - 0.2) / 0.4)
+        BodyGen.SetMorph(player, true, "AppleCheeks", NONE, 0)
+        BodyGen.SetMorph(player, true, "RoundAss", NONE, 0)
+    ElseIf Data.Butt > 0.6 && Data.Butt <= 0.9
+        BodyGen.SetMorph(player, true, "Butt", NONE, 1)
+        BodyGen.SetMorph(player, true, "ChubbyButt", NONE, 1)
+        BodyGen.SetMorph(player, true, "Thighs", NONE, 1)
+        BodyGen.SetMorph(player, true, "Waist", NONE, 1) 
+        BodyGen.SetMorph(player, true, "BigButt", NONE, 1)
+        BodyGen.SetMorph(player, true, "Back", NONE, 1)
+        BodyGen.SetMorph(player, true, "ChubbyLegs", NONE, 1)
+        BodyGen.SetMorph(player, true, "ChubbyWaist", NONE, 1)
+        BodyGen.SetMorph(player, true, "AppleCheeks", NONE, 2 * ((Data.Butt - 0.6) / 0.3)) ; Double Butt :3
+        BodyGen.SetMorph(player, true, "RoundAss", NONE, 0)
+    ElseIf Data.Butt > 0.9
+        BodyGen.SetMorph(player, true, "Butt", NONE, 1)
+        BodyGen.SetMorph(player, true, "ChubbyButt", NONE, 1)
+        BodyGen.SetMorph(player, true, "Thighs", NONE, 1)
+        BodyGen.SetMorph(player, true, "Waist", NONE, 1) 
+        BodyGen.SetMorph(player, true, "BigButt", NONE, 1)
+        BodyGen.SetMorph(player, true, "Back", NONE, 1)
+        BodyGen.SetMorph(player, true, "ChubbyLegs", NONE, 1)
+        BodyGen.SetMorph(player, true, "ChubbyWaist", NONE, 1)
+        BodyGen.SetMorph(player, true, "AppleCheeks", NONE, 2)
+        BodyGen.SetMorph(player, true, "RoundAss", NONE, (Data.Butt - 0.9) / 0.1)
+    Else
+        Debug.Trace("[Error] Butt OOB: " + Data.Butt)
+    EndIf
+
     BodyGen.UpdateMorphs(player)
 EndFunction
 
@@ -130,11 +193,11 @@ Function Metabolize(float calories)
     calories -= MetabolicRate
 
     If calories > 0
-        calories = MetabolizeBreasts(calories)
+        calories = MetabolizeBreasts(calories / 2.0) + MetabolizeButt(calories / 2.0)
         calories = MetabolizeSSBBW(calories)
     Else
         calories = MetabolizeSSBBW(calories)
-        calories = MetabolizeBreasts(calories)
+        calories = MetabolizeBreasts(calories / 2.0) + MetabolizeButt(calories / 2.0)
     EndIf
 EndFunction
 
@@ -150,11 +213,20 @@ EndFunction
 
 float Function MetabolizeBreasts(float calories)
     If (calories > 0 || Data.Breasts > 0.0) && Data.Breasts < 1.0
-        calories /= 2
         Data.Breasts += (calories / 3500) * 0.01
-        return calories
+        return 0.0
     Else
         Data.Breasts = Clamp(0.0, 1.0, Data.Breasts)
+        return calories
+    EndIf
+EndFunction
+
+float Function MetabolizeButt(float calories)
+    If (calories > 0 || Data.Butt > 0.0) && Data.Butt < 1.0
+        Data.Butt += (calories / 3500) * 0.01
+        return 0.0
+    Else
+        Data.Butt = Clamp(0.0, 1.0, Data.Butt)
         return calories
     EndIf
 EndFunction
