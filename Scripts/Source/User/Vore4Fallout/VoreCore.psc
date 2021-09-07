@@ -112,10 +112,31 @@ Function UpdateBody()
     Metabolize(Digest())
     
     BodyGen.SetMorph(Player, true, "Vore prey belly", NONE, Data.VoreBelly)
-    BodyGen.SetMorph(Player, true, "Giant Belly (coldsteelj)", NONE, Data.GiantBelly)
     BodyGen.SetMorph(Player, true, "SSBBW3 body", NONE, Data.SSBBW)
     BodyGen.SetMorph(Player, true, "Giant belly up", NONE, Math.Max(0.0, Math.Max(0.0, Data.VoreBelly) + (Math.Max(0.0, Data.GiantBelly) / 2) - 1.4 ) * 6)
-    BodyGen.SetMorph(Player, true, "SSBBW2 body", NONE, 0)
+
+    If Data.GiantBelly >= 0.0 && Data.GiantBelly <= 0.1
+        BodyGen.SetMorph(Player, true, "BigBelly", NONE, Data.GiantBelly * 10)
+        BodyGen.SetMorph(Player, true, "TummyTuck", NONE, Data.GiantBelly * 10)
+        BodyGen.SetMorph(Player, true, "PregnancyBelly", NONE, 0)
+        BodyGen.SetMorph(Player, true, "Giant Belly (coldsteelj)", NONE, 0)
+    ElseIf Data.GiantBelly > 0.1 && Data.GiantBelly <= 0.15
+        BodyGen.SetMorph(Player, true, "BigBelly", NONE, 1 - (Data.GiantBelly - 0.1))
+        BodyGen.SetMorph(Player, true, "TummyTuck", NONE, 1 - (Data.GiantBelly - 0.1))
+        BodyGen.SetMorph(Player, true, "PregnancyBelly", NONE, ((Data.GiantBelly - 0.1) / 0.15) * 0.5)
+        BodyGen.SetMorph(Player, true, "Giant Belly (coldsteelj)", NONE, 0)
+    ElseIf Data.GiantBelly > 0.15 && Data.GiantBelly <= 0.2
+        BodyGen.SetMorph(Player, true, "BigBelly", NONE, 0)
+        BodyGen.SetMorph(Player, true, "TummyTuck", NONE, 0)
+        BodyGen.SetMorph(Player, true, "PregnancyBelly", NONE, 0.5 - (Data.GiantBelly - 0.15) * 10)
+        BodyGen.SetMorph(Player, true, "Giant Belly (coldsteelj)", NONE, ((Data.GiantBelly - 0.15) / 0.05) * 0.2)
+    ElseIf Data.GiantBelly >= 0.2
+        BodyGen.SetMorph(Player, true, "BigBelly", NONE, 0)
+        BodyGen.SetMorph(Player, true, "TummyTuck", NONE, 0)
+        BodyGen.SetMorph(Player, true, "PregnancyBelly", NONE, 0)
+        BodyGen.SetMorph(Player, true, "Giant Belly (coldsteelj)", NONE, Data.GiantBelly)
+    EndIf
+    
     If Data.Breasts >= 0.0 && Data.Breasts <= 0.25
         BodyGen.SetMorph(Player, true, "Breasts", NONE, Data.Breasts / 0.25)
         BodyGen.SetMorph(Player, true, "BreastsNewSH", NONE, 0)
@@ -212,7 +233,8 @@ Function HandleFoodEvent()
     If Data.GiantBelly > maxBelly
         float excess = Data.GiantBelly - maxBelly
         Data.GiantBelly = maxBelly
-        Player.DamageValue(HealthAV, excess * 100)
+        Debug.Trace("Overeat: " + excess)
+        Player.DamageValue(HealthAV, excess * 4000)
     EndIf
         
     ; If Data.VoreBelly <= 0
