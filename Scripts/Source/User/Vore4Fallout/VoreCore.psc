@@ -1,9 +1,6 @@
 Scriptname Vore4Fallout:VoreCore extends Quest
 {Core functionality for Vore}
 
-MagicEffect Property HealthFoodME Auto Const
-{References Food item healing effect}
-
 float TickRate
 float SimRate
 float ConsumeVolume
@@ -83,15 +80,9 @@ Function Main()
     Initialize()
     ; DebugRates()
     UpdateBody()
-    Self.RegisterForMagicEffectApplyEvent(Player, Player, HealthFoodME, True)
     Self.RegisterForPlayerSleep()
     StartTimer(1)
 EndFunction
-
-Event OnMagicEffectApply(ObjectReference akTarget, ObjectReference akCaster, MagicEffect akEffect)
-    HandleFoodEvent()   
-    Self.RegisterForMagicEffectApplyEvent(Player, Player, HealthFoodME, True)
-EndEvent
 
 Event OnTimer(int timerID)
     UpdateBody()
@@ -227,14 +218,17 @@ Function UpdateBody()
     BodyGen.UpdateMorphs(Player)
 EndFunction
 
-Function HandleFoodEvent()
+Function HandleFoodEvent(ActiveMagicEffect ActiveHealthFoodEffect)
     Data.Giantbelly += ConsumeVolume
     float maxBelly = BellyMaxByAV()
     If Data.GiantBelly > maxBelly
         float excess = Data.GiantBelly - maxBelly
         Data.GiantBelly = maxBelly
-        Debug.Trace("Overeat: " + excess)
-        Player.DamageValue(HealthAV, excess * 4000)
+        Debug.Trace("Overeat: " + excess + " Health: " + Player.GetValue(HealthAV) + " AME: " + ActiveHealthFoodEffect)
+        If ActiveHealthFoodEffect != NONE
+            ActiveHealthFoodEffect.Dispel()
+        EndIf
+        Player.DamageValue(HealthAV, excess * 1000)
     EndIf
         
     ; If Data.VoreBelly <= 0
