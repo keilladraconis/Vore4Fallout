@@ -12,6 +12,17 @@ float DigestionRate
 float MetabolicRate
 float SleepStart
 
+ActorValue StrengthAV
+ActorValue PerceptionAV
+ActorValue EnduranceAV
+ActorValue CharismaAV
+ActorValue IntelligenceAV
+ActorValue AgilityAV
+ActorValue LuckAV
+
+Actor Player
+ActorValue HealthAV
+
 Function Initialize()
     TickRate = 1.0 / 1.0 ; ticks per second. Increasting numerator lowers resolution. Increasing denominator increases resolution.
     SimRate = TickRate / 1.0 ; Sims per Tick. Increasing denominator beyond 1 accelerates simulation. Decreasing it below 1 decelerates simulation. 
@@ -23,6 +34,15 @@ Function Initialize()
     MetabolicRate = 2.08 / SimRate ; calories burned per sim tick. Increase too much and you cannot get fat.
     ; Digesting at a rate of 1 full belly per 8 hours is 0.0025
     DigestionRate = 0.0034 / SimRate ; How much do you digest per sim tick? If DigestionRate * CalorieDensity < MetabolicRate, you never gain weight. 
+    StrengthAV = Game.GetStrengthAV()
+    PerceptionAV = Game.GetPerceptionAV()
+    EnduranceAV = Game.GetEnduranceAV()
+    CharismaAV = Game.GetCharismaAV()
+    IntelligenceAV = Game.GetIntelligenceAV()
+    AgilityAV = Game.GetAgilityAV()
+    LuckAV = Game.GetLuckAV()
+    Player = Game.GetPlayer()
+    HealthAV = Game.GetHealthAV()
 EndFunction
 
 Function DebugRates()
@@ -63,17 +83,14 @@ Function Main()
     Initialize()
     ; DebugRates()
     UpdateBody()
-    Actor player = Game.GetPlayer()
-    Self.RegisterForMagicEffectApplyEvent(player, player, HealthFoodME, True)
+    Self.RegisterForMagicEffectApplyEvent(Player, Player, HealthFoodME, True)
     Self.RegisterForPlayerSleep()
     StartTimer(1)
 EndFunction
 
 Event OnMagicEffectApply(ObjectReference akTarget, ObjectReference akCaster, MagicEffect akEffect)
-    HandleFoodEvent(akTarget as Actor)
-    
-	Actor player = Game.GetPlayer()
-    Self.RegisterForMagicEffectApplyEvent(player, player, HealthFoodME, True)
+    HandleFoodEvent()   
+    Self.RegisterForMagicEffectApplyEvent(Player, Player, HealthFoodME, True)
 EndEvent
 
 Event OnTimer(int timerID)
@@ -92,111 +109,121 @@ EndEvent
 
 Function UpdateBody()
     Debug.Trace("VB: " + Data.VoreBelly + " GB: " + Data.GiantBelly + " B: " + Data.Breasts + " U: " + Data.Butt + " BBW: " + Data.SSBBW)
-    Actor player = Game.GetPlayer()
     Metabolize(Digest())
     
-    BodyGen.SetMorph(player, true, "Vore prey belly", NONE, Data.VoreBelly)
-    BodyGen.SetMorph(player, true, "Giant Belly (coldsteelj)", NONE, Data.GiantBelly)
-    BodyGen.SetMorph(player, true, "SSBBW3 body", NONE, Data.SSBBW)
-    BodyGen.SetMorph(player, true, "Giant belly up", NONE, Math.Max(0.0, Math.Max(0.0, Data.VoreBelly) + (Math.Max(0.0, Data.GiantBelly) / 2) - 1.4 ) * 6)
-    BodyGen.SetMorph(player, true, "SSBBW2 body", NONE, 0)
+    BodyGen.SetMorph(Player, true, "Vore prey belly", NONE, Data.VoreBelly)
+    BodyGen.SetMorph(Player, true, "Giant Belly (coldsteelj)", NONE, Data.GiantBelly)
+    BodyGen.SetMorph(Player, true, "SSBBW3 body", NONE, Data.SSBBW)
+    BodyGen.SetMorph(Player, true, "Giant belly up", NONE, Math.Max(0.0, Math.Max(0.0, Data.VoreBelly) + (Math.Max(0.0, Data.GiantBelly) / 2) - 1.4 ) * 6)
+    BodyGen.SetMorph(Player, true, "SSBBW2 body", NONE, 0)
     If Data.Breasts >= 0.0 && Data.Breasts <= 0.25
-        BodyGen.SetMorph(player, true, "Breasts", NONE, Data.Breasts / 0.25)
-        BodyGen.SetMorph(player, true, "BreastsNewSH", NONE, 0)
-        BodyGen.SetMorph(player, true, "BreastsTogether", NONE, 0)
-        BodyGen.SetMorph(player, true, "DoubleMelon", NONE, 0)
-        BodyGen.SetMorph(player, true, "BreastFantasy", NONE, 0)
+        BodyGen.SetMorph(Player, true, "Breasts", NONE, Data.Breasts / 0.25)
+        BodyGen.SetMorph(Player, true, "BreastsNewSH", NONE, 0)
+        BodyGen.SetMorph(Player, true, "BreastsTogether", NONE, 0)
+        BodyGen.SetMorph(Player, true, "DoubleMelon", NONE, 0)
+        BodyGen.SetMorph(Player, true, "BreastFantasy", NONE, 0)
     ElseIf Data.Breasts > 0.25 && Data.Breasts <= 0.5
-        BodyGen.SetMorph(player, true, "Breasts", NONE, 1)
-        BodyGen.SetMorph(player, true, "BreastsNewSH", NONE, (Data.Breasts - 0.25) / 0.25)
-        BodyGen.SetMorph(player, true, "BreastsTogether", NONE, (Data.Breasts - 0.25) / 0.25)
-        BodyGen.SetMorph(player, true, "DoubleMelon", NONE, 0)
-        BodyGen.SetMorph(player, true, "BreastFantasy", NONE, 0)
+        BodyGen.SetMorph(Player, true, "Breasts", NONE, 1)
+        BodyGen.SetMorph(Player, true, "BreastsNewSH", NONE, (Data.Breasts - 0.25) / 0.25)
+        BodyGen.SetMorph(Player, true, "BreastsTogether", NONE, (Data.Breasts - 0.25) / 0.25)
+        BodyGen.SetMorph(Player, true, "DoubleMelon", NONE, 0)
+        BodyGen.SetMorph(Player, true, "BreastFantasy", NONE, 0)
     ElseIf Data.Breasts > 0.5 && Data.Breasts <= 0.75
-        BodyGen.SetMorph(player, true, "Breasts", NONE, 1)
-        BodyGen.SetMorph(player, true, "BreastsNewSH", NONE, 1)
-        BodyGen.SetMorph(player, true, "BreastsTogether", NONE, 1 - ((Data.Breasts - 0.5) * 4))
-        BodyGen.SetMorph(player, true, "DoubleMelon", NONE, (Data.Breasts - 0.5) / 0.25)
-        BodyGen.SetMorph(player, true, "BreastFantasy", NONE, 0)
+        BodyGen.SetMorph(Player, true, "Breasts", NONE, 1)
+        BodyGen.SetMorph(Player, true, "BreastsNewSH", NONE, 1)
+        BodyGen.SetMorph(Player, true, "BreastsTogether", NONE, 1 - ((Data.Breasts - 0.5) * 4))
+        BodyGen.SetMorph(Player, true, "DoubleMelon", NONE, (Data.Breasts - 0.5) / 0.25)
+        BodyGen.SetMorph(Player, true, "BreastFantasy", NONE, 0)
     ElseIf Data.Breasts > 0.75 ; && Data.Breasts <= 1
-        BodyGen.SetMorph(player, true, "Breasts", NONE, 1)
-        BodyGen.SetMorph(player, true, "BreastsNewSH", NONE, 1)
-        BodyGen.SetMorph(player, true, "BreastsTogether", NONE, 0)
-        BodyGen.SetMorph(player, true, "DoubleMelon", NONE, 1)
-        BodyGen.SetMorph(player, true, "BreastFantasy", NONE, (Data.Breasts - 0.75) / 0.25)
+        BodyGen.SetMorph(Player, true, "Breasts", NONE, 1)
+        BodyGen.SetMorph(Player, true, "BreastsNewSH", NONE, 1)
+        BodyGen.SetMorph(Player, true, "BreastsTogether", NONE, 0)
+        BodyGen.SetMorph(Player, true, "DoubleMelon", NONE, 1)
+        BodyGen.SetMorph(Player, true, "BreastFantasy", NONE, (Data.Breasts - 0.75) / 0.25)
     Else
         Debug.Trace("[Error] Breasts OOB: " + Data.Breasts)
     EndIf
 
     If Data.Butt >= 0.0 && Data.Butt <= 0.1
-        BodyGen.SetMorph(player, true, "Butt", NONE, Data.Butt / 0.1)
-        BodyGen.SetMorph(player, true, "ChubbyButt", NONE, 0)
-        BodyGen.SetMorph(player, true, "Thighs", NONE, 0)
-        BodyGen.SetMorph(player, true, "Waist", NONE, 0) 
-        BodyGen.SetMorph(player, true, "BigButt", NONE, 0)
-        BodyGen.SetMorph(player, true, "Back", NONE, 0)
-        BodyGen.SetMorph(player, true, "ChubbyLegs", NONE, 0)
-        BodyGen.SetMorph(player, true, "ChubbyWaist", NONE, 0)
-        BodyGen.SetMorph(player, true, "AppleCheeks", NONE, 0)
-        BodyGen.SetMorph(player, true, "RoundAss", NONE, 0)
+        BodyGen.SetMorph(Player, true, "Butt", NONE, Data.Butt / 0.1)
+        BodyGen.SetMorph(Player, true, "ChubbyButt", NONE, 0)
+        BodyGen.SetMorph(Player, true, "Thighs", NONE, 0)
+        BodyGen.SetMorph(Player, true, "Waist", NONE, 0) 
+        BodyGen.SetMorph(Player, true, "BigButt", NONE, 0)
+        BodyGen.SetMorph(Player, true, "Back", NONE, 0)
+        BodyGen.SetMorph(Player, true, "ChubbyLegs", NONE, 0)
+        BodyGen.SetMorph(Player, true, "ChubbyWaist", NONE, 0)
+        BodyGen.SetMorph(Player, true, "AppleCheeks", NONE, 0)
+        BodyGen.SetMorph(Player, true, "RoundAss", NONE, 0)
     ElseIf Data.Butt > 0.1 && Data.Butt <= 0.2
-        BodyGen.SetMorph(player, true, "Butt", NONE, 1)
-        BodyGen.SetMorph(player, true, "ChubbyButt", NONE, (Data.Butt - 0.1) / 0.1)
-        BodyGen.SetMorph(player, true, "Thighs", NONE, (Data.Butt - 0.1) / 0.1)
-        BodyGen.SetMorph(player, true, "Waist", NONE, (Data.Butt - 0.1) / 0.1) 
-        BodyGen.SetMorph(player, true, "BigButt", NONE, 0)
-        BodyGen.SetMorph(player, true, "Back", NONE, 0)
-        BodyGen.SetMorph(player, true, "ChubbyLegs", NONE, 0)
-        BodyGen.SetMorph(player, true, "ChubbyWaist", NONE, 0)
-        BodyGen.SetMorph(player, true, "AppleCheeks", NONE, 0)
-        BodyGen.SetMorph(player, true, "RoundAss", NONE, 0)
+        BodyGen.SetMorph(Player, true, "Butt", NONE, 1)
+        BodyGen.SetMorph(Player, true, "ChubbyButt", NONE, (Data.Butt - 0.1) / 0.1)
+        BodyGen.SetMorph(Player, true, "Thighs", NONE, (Data.Butt - 0.1) / 0.1)
+        BodyGen.SetMorph(Player, true, "Waist", NONE, (Data.Butt - 0.1) / 0.1) 
+        BodyGen.SetMorph(Player, true, "BigButt", NONE, 0)
+        BodyGen.SetMorph(Player, true, "Back", NONE, 0)
+        BodyGen.SetMorph(Player, true, "ChubbyLegs", NONE, 0)
+        BodyGen.SetMorph(Player, true, "ChubbyWaist", NONE, 0)
+        BodyGen.SetMorph(Player, true, "AppleCheeks", NONE, 0)
+        BodyGen.SetMorph(Player, true, "RoundAss", NONE, 0)
     ElseIf Data.Butt > 0.2 && Data.Butt <= 0.6
-        BodyGen.SetMorph(player, true, "Butt", NONE, 1)
-        BodyGen.SetMorph(player, true, "ChubbyButt", NONE, 1)
-        BodyGen.SetMorph(player, true, "Thighs", NONE, 1)
-        BodyGen.SetMorph(player, true, "Waist", NONE, 1) 
-        BodyGen.SetMorph(player, true, "BigButt", NONE, (Data.Butt - 0.2) / 0.4)
-        BodyGen.SetMorph(player, true, "Back", NONE, (Data.Butt - 0.2) / 0.4)
-        BodyGen.SetMorph(player, true, "ChubbyLegs", NONE, (Data.Butt - 0.2) / 0.4)
-        BodyGen.SetMorph(player, true, "ChubbyWaist", NONE, (Data.Butt - 0.2) / 0.4)
-        BodyGen.SetMorph(player, true, "AppleCheeks", NONE, 0)
-        BodyGen.SetMorph(player, true, "RoundAss", NONE, 0)
+        BodyGen.SetMorph(Player, true, "Butt", NONE, 1)
+        BodyGen.SetMorph(Player, true, "ChubbyButt", NONE, 1)
+        BodyGen.SetMorph(Player, true, "Thighs", NONE, 1)
+        BodyGen.SetMorph(Player, true, "Waist", NONE, 1) 
+        BodyGen.SetMorph(Player, true, "BigButt", NONE, (Data.Butt - 0.2) / 0.4)
+        BodyGen.SetMorph(Player, true, "Back", NONE, (Data.Butt - 0.2) / 0.4)
+        BodyGen.SetMorph(Player, true, "ChubbyLegs", NONE, (Data.Butt - 0.2) / 0.4)
+        BodyGen.SetMorph(Player, true, "ChubbyWaist", NONE, (Data.Butt - 0.2) / 0.4)
+        BodyGen.SetMorph(Player, true, "AppleCheeks", NONE, 0)
+        BodyGen.SetMorph(Player, true, "RoundAss", NONE, 0)
     ElseIf Data.Butt > 0.6 && Data.Butt <= 0.9
-        BodyGen.SetMorph(player, true, "Butt", NONE, 1)
-        BodyGen.SetMorph(player, true, "ChubbyButt", NONE, 1)
-        BodyGen.SetMorph(player, true, "Thighs", NONE, 1)
-        BodyGen.SetMorph(player, true, "Waist", NONE, 1) 
-        BodyGen.SetMorph(player, true, "BigButt", NONE, 1)
-        BodyGen.SetMorph(player, true, "Back", NONE, 1)
-        BodyGen.SetMorph(player, true, "ChubbyLegs", NONE, 1)
-        BodyGen.SetMorph(player, true, "ChubbyWaist", NONE, 1)
-        BodyGen.SetMorph(player, true, "AppleCheeks", NONE, 2 * ((Data.Butt - 0.6) / 0.3)) ; Double Butt :3
-        BodyGen.SetMorph(player, true, "RoundAss", NONE, 0)
+        BodyGen.SetMorph(Player, true, "Butt", NONE, 1)
+        BodyGen.SetMorph(Player, true, "ChubbyButt", NONE, 1)
+        BodyGen.SetMorph(Player, true, "Thighs", NONE, 1)
+        BodyGen.SetMorph(Player, true, "Waist", NONE, 1) 
+        BodyGen.SetMorph(Player, true, "BigButt", NONE, 1)
+        BodyGen.SetMorph(Player, true, "Back", NONE, 1)
+        BodyGen.SetMorph(Player, true, "ChubbyLegs", NONE, 1)
+        BodyGen.SetMorph(Player, true, "ChubbyWaist", NONE, 1)
+        BodyGen.SetMorph(Player, true, "AppleCheeks", NONE, 2 * ((Data.Butt - 0.6) / 0.3)) ; Double Butt :3
+        BodyGen.SetMorph(Player, true, "RoundAss", NONE, 0)
     ElseIf Data.Butt > 0.9
-        BodyGen.SetMorph(player, true, "Butt", NONE, 1)
-        BodyGen.SetMorph(player, true, "ChubbyButt", NONE, 1)
-        BodyGen.SetMorph(player, true, "Thighs", NONE, 1)
-        BodyGen.SetMorph(player, true, "Waist", NONE, 1) 
-        BodyGen.SetMorph(player, true, "BigButt", NONE, 1)
-        BodyGen.SetMorph(player, true, "Back", NONE, 1)
-        BodyGen.SetMorph(player, true, "ChubbyLegs", NONE, 1)
-        BodyGen.SetMorph(player, true, "ChubbyWaist", NONE, 1)
-        BodyGen.SetMorph(player, true, "AppleCheeks", NONE, 2)
-        BodyGen.SetMorph(player, true, "RoundAss", NONE, (Data.Butt - 0.9) / 0.1)
+        BodyGen.SetMorph(Player, true, "Butt", NONE, 1)
+        BodyGen.SetMorph(Player, true, "ChubbyButt", NONE, 1)
+        BodyGen.SetMorph(Player, true, "Thighs", NONE, 1)
+        BodyGen.SetMorph(Player, true, "Waist", NONE, 1) 
+        BodyGen.SetMorph(Player, true, "BigButt", NONE, 1)
+        BodyGen.SetMorph(Player, true, "Back", NONE, 1)
+        BodyGen.SetMorph(Player, true, "ChubbyLegs", NONE, 1)
+        BodyGen.SetMorph(Player, true, "ChubbyWaist", NONE, 1)
+        BodyGen.SetMorph(Player, true, "AppleCheeks", NONE, 2)
+        BodyGen.SetMorph(Player, true, "RoundAss", NONE, (Data.Butt - 0.9) / 0.1)
     Else
         Debug.Trace("[Error] Butt OOB: " + Data.Butt)
     EndIf
 
-    BodyGen.UpdateMorphs(player)
+    BodyGen.UpdateMorphs(Player)
 EndFunction
 
-Function HandleFoodEvent(Actor actor)
+Function HandleFoodEvent()
     Data.Giantbelly += ConsumeVolume
+    float maxBelly = BellyMaxByAV()
+    If Data.GiantBelly > maxBelly
+        float excess = Data.GiantBelly - maxBelly
+        Data.GiantBelly = maxBelly
+        Player.DamageValue(HealthAV, excess * 100)
+    EndIf
+        
     ; If Data.VoreBelly <= 0
     ;     Data.VoreBelly += 0.5
     ; Else
     ;     Data.VoreBelly += 0.1
     ; EndIf
+EndFunction
+
+float Function BellyMaxByAV()
+    return Player.GetValue(EnduranceAV) / 20.0
 EndFunction
 
 float Function Digest(float time = 1.0)
@@ -205,7 +232,7 @@ float Function Digest(float time = 1.0)
         Data.GiantBelly += DigestionRate * 0.02 * time
         return 0.0
     ElseIf Data.GiantBelly > 0.0
-        float digestAmount = DigestionRate * 0.01 * time
+        float digestAmount = DigestionRate * 0.01 * Player.GetValue(PerceptionAV) * time
         If digestAmount > Data.GiantBelly
             float actual = Data.GiantBelly
             Data.GiantBelly = 0.0
@@ -217,7 +244,7 @@ float Function Digest(float time = 1.0)
     Else
         Data.VoreBelly = 0.0
         Data.GiantBelly = 0.0
-        return -MetabolicRate * time
+        return -MetabolicRate * Player.GetValue(AgilityAV) * time
     EndIf
 
 EndFunction
@@ -247,9 +274,10 @@ EndFunction
 float Function MetabolizeBreasts(float calories)
     Data.Breasts += (calories / 3500) * 0.025
 
-    If Data.Breasts > 1.0
-        float excess = Data.Breasts - 1.0
-        Data.Breasts = 1.0
+    float breastsMax = BreastsMaxByAV()
+    If Data.Breasts > breastsMax
+        float excess = Data.Breasts - breastsMax
+        Data.Breasts = breastsMax
         return excess * 20 * 3500
     ElseIf Data.Breasts < 0.0
         float excess = Data.Breasts
@@ -260,12 +288,17 @@ float Function MetabolizeBreasts(float calories)
     EndIf
 EndFunction
 
+float Function BreastsMaxByAV()
+    return Player.GetValue(IntelligenceAV) / 10.0
+EndFunction
+
 float Function MetabolizeButt(float calories)
     Data.Butt += (calories / 3500) * 0.01
 
-    If Data.Butt > 1.0
-        float excess = Data.Butt - 1.0
-        Data.Butt = 1.0
+    float buttMax = ButtMaxByAV()
+    If Data.Butt > buttMax
+        float excess = Data.Butt - buttMax
+        Data.Butt = buttMax
         return excess * 100 * 3500
     ElseIf Data.Butt < 0.0
         float excess = Data.Butt
@@ -274,6 +307,10 @@ float Function MetabolizeButt(float calories)
     Else
         return 0.0
     EndIf
+EndFunction
+
+float Function ButtMaxByAV()
+    return Player.GetValue(CharismaAV) / 10.0
 EndFunction
 
 float Function Clamp(float min, float max, float x)
