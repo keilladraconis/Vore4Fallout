@@ -8,6 +8,7 @@ float CalorieDensity
 float DigestionRate
 float MetabolicRate
 float SleepStart
+float DigestHealthRestore
 
 ActorValue StrengthAV
 ActorValue PerceptionAV
@@ -16,6 +17,8 @@ ActorValue CharismaAV
 ActorValue IntelligenceAV
 ActorValue AgilityAV
 ActorValue LuckAV
+
+float EndurancePerkInc
 
 Actor Player
 ActorValue HealthAV
@@ -31,6 +34,7 @@ Function Initialize()
     MetabolicRate = 2.08 / SimRate ; calories burned per sim tick. Increase too much and you cannot get fat.
     ; Digesting at a rate of 1 full belly per 8 hours is 0.0025
     DigestionRate = 0.0034 / SimRate ; How much do you digest per sim tick? If DigestionRate * CalorieDensity < MetabolicRate, you never gain weight. 
+    DigestHealthRestore = 1000
     StrengthAV = Game.GetStrengthAV()
     PerceptionAV = Game.GetPerceptionAV()
     EnduranceAV = Game.GetEnduranceAV()
@@ -38,6 +42,7 @@ Function Initialize()
     IntelligenceAV = Game.GetIntelligenceAV()
     AgilityAV = Game.GetAgilityAV()
     LuckAV = Game.GetLuckAV()
+    EndurancePerkInc = 10.0
     Player = Game.GetPlayer()
     HealthAV = Game.GetHealthAV()
 EndFunction
@@ -58,6 +63,7 @@ Struct VoreData
     float SSBBW = 0.0
     float Breasts = 0.0
     float Butt = 0.0
+    float EndurancePerkProgress = 0.0
 EndStruct
 
 VoreData Data
@@ -224,7 +230,8 @@ Function HandleFoodEvent(ActiveMagicEffect ActiveHealthFoodEffect)
     If Data.GiantBelly > maxBelly
         float excess = Data.GiantBelly - maxBelly
         Data.GiantBelly = maxBelly
-        Debug.Trace("Overeat: " + excess + " Health: " + Player.GetValue(HealthAV) + " AME: " + ActiveHealthFoodEffect)
+        Data.EndurancePerkProgress += excess * EndurancePerkInc
+        Debug.Trace("Overeat: " + excess + " EndurancePerkProgress: " + Data.EndurancePerkProgress)
         If ActiveHealthFoodEffect != NONE
             ActiveHealthFoodEffect.Dispel()
         EndIf
@@ -239,7 +246,9 @@ Function HandleFoodEvent(ActiveMagicEffect ActiveHealthFoodEffect)
 EndFunction
 
 float Function BellyMaxByAV()
-    return Player.GetValue(EnduranceAV) / 20.0
+    ; An hockey-stick function targeting 6.0 at Endurance 10
+    ; y = Ax2 + Bx + C
+    return 0.06 * Math.pow(Player.GetValue(EnduranceAV) / 2.8, 3)
 EndFunction
 
 float Function Digest(float time = 1.0)
@@ -249,6 +258,8 @@ float Function Digest(float time = 1.0)
         return 0.0
     ElseIf Data.GiantBelly > 0.0
         float digestAmount = DigestionRate * 0.01 * Player.GetValue(PerceptionAV) * time
+        Debug.Trace("HealthDigest: " + digestAmount * DigestHealthRestore)
+        Player.RestoreValue(HealthAV, digestAmount * DigestHealthRestore)
         If digestAmount > Data.GiantBelly
             float actual = Data.GiantBelly
             Data.GiantBelly = 0.0
@@ -262,7 +273,6 @@ float Function Digest(float time = 1.0)
         Data.GiantBelly = 0.0
         return -MetabolicRate * Player.GetValue(AgilityAV) * time
     EndIf
-
 EndFunction
 
 Function Metabolize(float calories)
