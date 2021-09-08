@@ -69,26 +69,32 @@ EndStruct
 VoreData Data
 
 Event OnInit()
-    Main()
+    Setup()
     RegisterForRemoteEvent(Game.GetPlayer(), "OnPlayerLoadGame")
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
-	Main()
+	Setup()
 EndEvent
 
-Function Main()
+Function Setup()
+    ; Debug.Trace("RestoreHealthFood: " + RestoreHealthFood)
+    ; RegisterForCustomEvent(RestoreHealthFood, "FoodConsumed")
     ; Reset every time. Debugging only
-    Data = new VoreData
+    ; Data = new VoreData
     ; If(Data==NONE)
 	; 	Data = new VoreData
 	; EndIf
-    Initialize()
-    ; DebugRates()
-    UpdateBody()
-    Self.RegisterForPlayerSleep()
-    StartTimer(1)
+    ; Initialize()
+    ; ; DebugRates()
+    ; UpdateBody()
+    ; Self.RegisterForPlayerSleep()
+    ; StartTimer(1)
 EndFunction
+
+; Event Vore4Fallout:RestoreHealthFood.FoodConsumed(Vore4Fallout:RestoreHealthFood sender, Var[] akArgs)
+;     Debug.Notification("Custom Event Worked")
+; EndEvent
 
 Event OnTimer(int timerID)
     UpdateBody()
