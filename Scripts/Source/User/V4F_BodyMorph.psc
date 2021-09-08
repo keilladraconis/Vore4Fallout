@@ -10,6 +10,10 @@ float morphFrame
 
 float bigBellyA
 float bigBellyB
+float tummyTuckA
+float tummyTuckB
+float pregA
+float pregB
 float giantBellyA
 float giantBellyB
 
@@ -24,22 +28,26 @@ event V4F_VoreCore.BodyUpdate(V4F_VoreCore caller, Var[] args)
     morphFrame = 0.0
     bigBellyA = BodyGen.GetMorph(Player, true, "BigBelly", NONE)
     bigBellyB = body.bigBelly - bigBellyA
+    tummyTuckA = BodyGen.GetMorph(Player, true, "TummyTuck", NONE)
+    tummyTuckB = body.tummyTuck - tummyTuckA
+    pregA = BodyGen.GetMorph(Player, true, "PregnancyBelly", NONE)
+    pregB = body.pregnancyBelly - pregA
     giantBellyA = BodyGen.GetMorph(Player, true, "Giant Belly (coldsteelj)", NONE)
-    giantBellyB = 1.0
+    giantBellyB = body.giantBelly - giantBellyA
     
     StartTimer(0.016) ; 60 fps :3
 endevent
 
 event OnTimer(int timer)
     float easing = easeInOutQuad(morphFrame)
-    float bbVal = bigBellyB * easing + bigBellyA
-    Debug.Trace("MF: " + morphFrame + " Easing: " + easing + " BB: " + bbVal)
-    BodyGen.SetMorph(Player, true, "BigBelly", NONE, bbVal)
+    BodyGen.SetMorph(Player, true, "BigBelly", NONE, bigBellyB * easing + bigBellyA)
+    BodyGen.SetMorph(Player, true, "TummyTuck", NONE, tummyTuckB * easing + tummyTuckA)
+    BodyGen.SetMorph(Player, true, "PregnancyBelly", NONE, pregB * easing + pregA)
     BodyGen.SetMorph(Player, true, "Giant Belly (coldsteelj)", NONE, giantBellyB * easing + giantBellyA)
 
     BodyGen.UpdateMorphs(Player)
     if easing < 1
-        morphFrame += 0.005
+        morphFrame += 0.01
         StartTimer(0.016) ; 60 fps :3
     else
         Debug.Trace("Done!")
