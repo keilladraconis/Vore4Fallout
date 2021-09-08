@@ -31,7 +31,7 @@ event V4F_VoreCore.BodyUpdate(V4F_VoreCore caller, Var[] args)
 endevent
 
 event OnTimer(int timer)
-    float easing = easeNone(morphFrame)
+    float easing = easeInOutQuad(morphFrame)
     float bbVal = bigBellyB * easing + bigBellyA
     Debug.Trace("MF: " + morphFrame + " Easing: " + easing + " BB: " + bbVal)
     BodyGen.SetMorph(Player, true, "BigBelly", NONE, bbVal)
@@ -47,10 +47,20 @@ event OnTimer(int timer)
 endevent
 
 ; https://github.com/Michaelangel007/easing
-float function easeNone(float time)
-    return time
+float function easeLinear(float p)
+    return p
 endfunction
 
-float function easeInOutSine(float time)
-    return -(Math.cos(Math.DegreesToRadians(PI * time)) - 1.0)
+float function easeInOutSine(float p)
+    return 0.5*(1 - Math.cos(p * PI))
+endfunction
+
+float function easeInOutQuad(float p)
+    float m = p - 1
+    return 1 - m * m
+endfunction
+
+; For some reason, F4 has bullshit trig functions that make no sense.
+float function easeOutElastic(float p)
+    return 1 + (Math.pow(2, 10 * -p) * Math.sin((-p * 40 - 3) * PI / 6))
 endfunction
