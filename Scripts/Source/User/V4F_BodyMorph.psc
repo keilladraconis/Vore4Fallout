@@ -60,7 +60,6 @@ event OnInit()
 endevent
 
 function StartMorph()
-    GotoState("Morphin")
     V4F_VoreCore:Body body = VoreCore.PlayerBody
     Debug.Trace("MorphBody:" + body)
 
@@ -115,72 +114,61 @@ function StartMorph()
     Debug.Trace("Morphin")
 endfunction
 
-event OnTimer(int timer)
-    if timer != 11
-        return
-    endif
-    Debug.Trace("Deferred Morphin")
-    GotoState("Morphin")
-    StartMorph()
-endevent
-
 event V4F_VoreCore.BodyUpdate(V4F_VoreCore caller, Var[] args)
     Debug.Trace("Immediate Morphin")
     morphQueue = 0
     StartMorph()
 endevent
 
-state Morphin
-    event V4F_VoreCore.BodyUpdate(V4F_VoreCore caller, Var[] args)
-        morphQueue += 1
-        Debug.Trace("Morphin Queued:" + morphQueue)
-    endevent
+event OnTimer(int timer)
+    float easing = easeOutQuad(morphFrame)
+    BodyGen.SetMorph(Player, true, "Vore prey belly", NONE, voreBellyB * easing + voreBellyA)
+    BodyGen.SetMorph(Player, true, "SSBBW3 body", NONE, bbwB * easing + bbwA)
+    BodyGen.SetMorph(Player, true, "Giant belly up", NONE, giantBellyUpB * easing + giantBellyUpA)
+    BodyGen.SetMorph(Player, true, "BigBelly", NONE, bigBellyB * easing + bigBellyA)
+    BodyGen.SetMorph(Player, true, "TummyTuck", NONE, tummyTuckB * easing + tummyTuckA)
+    BodyGen.SetMorph(Player, true, "PregnancyBelly", NONE, pregB * easing + pregA)
+    BodyGen.SetMorph(Player, true, "Giant Belly (coldsteelj)", NONE, giantBellyB * easing + giantBellyA)
+    BodyGen.SetMorph(Player, true, "Breasts", NONE, breastsB * easing + breastsA)
+    BodyGen.SetMorph(Player, true, "BreastsNewSH", NONE, breastsHB * easing + breastsHA)
+    BodyGen.SetMorph(Player, true, "BreastsTogether", NONE, breastsTB * easing + breastsTA)
+    BodyGen.SetMorph(Player, true, "DoubleMelon", NONE, breastsDB * easing + breastsDA)
+    BodyGen.SetMorph(Player, true, "BreastFantasy", NONE, breastsFB * easing + breastsFA)
+    BodyGen.SetMorph(Player, true, "Butt", NONE, buttB * easing + buttA)
+    BodyGen.SetMorph(Player, true, "ChubbyButt", NONE, buttChubbyB * easing + buttChubbyA)
+    BodyGen.SetMorph(Player, true, "Thighs", NONE, buttThighsB * easing + buttThighsA)
+    BodyGen.SetMorph(Player, true, "Waist", NONE, buttWaistB * easing + buttWaistA)
+    BodyGen.SetMorph(Player, true, "Back", NONE, buttBackB * easing + buttBackA)
+    BodyGen.SetMorph(Player, true, "BigButt", NONE, buttBigB * easing + buttBigA)
+    BodyGen.SetMorph(Player, true, "ChubbyLegs", NONE, buttCLegsB * easing + buttCLegsA)
+    BodyGen.SetMorph(Player, true, "ChubbyWaist", NONE, buttCWaistB * easing + buttCWaistA)
+    BodyGen.SetMorph(Player, true, "AppleCheeks", NONE, buttAppleB * easing + buttAppleA)
+    BodyGen.SetMorph(Player, true, "RoundAss", NONE, buttRoundB * easing + buttRoundA)
 
-    event OnTimer(int timer)
-        float easing = easeInOutQuad(morphFrame)
-        BodyGen.SetMorph(Player, true, "Vore prey belly", NONE, voreBellyB * easing + voreBellyA)
-        BodyGen.SetMorph(Player, true, "SSBBW3 body", NONE, bbwB * easing + bbwA)
-        BodyGen.SetMorph(Player, true, "Giant belly up", NONE, giantBellyUpB * easing + giantBellyUpA)
-        BodyGen.SetMorph(Player, true, "BigBelly", NONE, bigBellyB * easing + bigBellyA)
-        BodyGen.SetMorph(Player, true, "TummyTuck", NONE, tummyTuckB * easing + tummyTuckA)
-        BodyGen.SetMorph(Player, true, "PregnancyBelly", NONE, pregB * easing + pregA)
-        BodyGen.SetMorph(Player, true, "Giant Belly (coldsteelj)", NONE, giantBellyB * easing + giantBellyA)
-        BodyGen.SetMorph(Player, true, "Breasts", NONE, breastsB * easing + breastsA)
-        BodyGen.SetMorph(Player, true, "BreastsNewSH", NONE, breastsHB * easing + breastsHA)
-        BodyGen.SetMorph(Player, true, "BreastsTogether", NONE, breastsTB * easing + breastsTA)
-        BodyGen.SetMorph(Player, true, "DoubleMelon", NONE, breastsDB * easing + breastsDA)
-        BodyGen.SetMorph(Player, true, "BreastFantasy", NONE, breastsFB * easing + breastsFA)
-        BodyGen.SetMorph(Player, true, "Butt", NONE, buttB * easing + buttA)
-        BodyGen.SetMorph(Player, true, "ChubbyButt", NONE, buttChubbyB * easing + buttChubbyA)
-        BodyGen.SetMorph(Player, true, "Thighs", NONE, buttThighsB * easing + buttThighsA)
-        BodyGen.SetMorph(Player, true, "Waist", NONE, buttWaistB * easing + buttWaistA)
-        BodyGen.SetMorph(Player, true, "Back", NONE, buttBackB * easing + buttBackA)
-        BodyGen.SetMorph(Player, true, "BigButt", NONE, buttBigB * easing + buttBigA)
-        BodyGen.SetMorph(Player, true, "ChubbyLegs", NONE, buttCLegsB * easing + buttCLegsA)
-        BodyGen.SetMorph(Player, true, "ChubbyWaist", NONE, buttCWaistB * easing + buttCWaistA)
-        BodyGen.SetMorph(Player, true, "AppleCheeks", NONE, buttAppleB * easing + buttAppleA)
-        BodyGen.SetMorph(Player, true, "RoundAss", NONE, buttRoundB * easing + buttRoundA)
-
-        BodyGen.UpdateMorphs(Player)
-        if easing < 1.0 && morphFrame < 1.0
-            morphFrame += 0.04
-            StartTimer(0.016, 10) ; 60 fps :3
+    BodyGen.UpdateMorphs(Player)
+    if easing < 1.0 && morphFrame < 1.0
+        morphFrame += 0.04
+        StartTimer(0.016, 10) ; 60 fps :3
+    else
+        if morphQueue > 0
+            Debug.Trace("Starting queued morph:" + morphQueue)
+            morphQueue -= 1
+            StartMorph()
         else
-            if morphQueue > 0
-                Debug.Trace("Starting queued morph:" + morphQueue)
-                morphQueue -= 1
-                StartMorph()
-            else
-                Debug.Trace("Done Morphin")
-                GotoState("")
-            endif
+            Debug.Trace("Done Morphin")
+            GotoState("")
         endif
-    endevent
-endstate
+    endif
+endevent
 
 ; https://github.com/Michaelangel007/easing
 float function easeLinear(float p)
     return p
+endfunction
+
+float function easeOutQuad(float p)
+    float m = p - 1.0
+    return 1.0 - m * m 
 endfunction
 
 float function easeInOutSine(float p)
@@ -188,8 +176,13 @@ float function easeInOutSine(float p)
 endfunction
 
 float function easeInOutQuad(float p)
-    float m = p - 1
-    return 1 - m * m
+    float m = p - 1.0
+    float t = p * 2.0
+    if t < 1.0
+        return p * t
+    else
+        return 1 - m * m * 2
+    endif
 endfunction
 
 ; For some reason, F4 has bullshit trig functions that make no sense.
