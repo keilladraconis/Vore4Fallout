@@ -22,7 +22,7 @@ event OnInit()
     RegisterForCustomEvent(VoreCore, "BodyUpdate")
 endevent
 
-event V4F_VoreCore.BodyUpdate(V4F_VoreCore caller, Var[] args)
+function ReadBodyUpdateArgs(Var[] args)
     V4F_VoreCore:Body body = (args[0] as V4F_VoreCore:Body)
 
     morphFrame = 0.0
@@ -34,25 +34,39 @@ event V4F_VoreCore.BodyUpdate(V4F_VoreCore caller, Var[] args)
     pregB = body.pregnancyBelly - pregA
     giantBellyA = BodyGen.GetMorph(Player, true, "Giant Belly (coldsteelj)", NONE)
     giantBellyB = body.giantBelly - giantBellyA
+endfunction
+
+event V4F_VoreCore.BodyUpdate(V4F_VoreCore caller, Var[] args)
+    GotoState("Morphin")
+    ReadBodyUpdateArgs(args)
     
     StartTimer(0.016) ; 60 fps :3
+    Debug.Trace("Morphin")
 endevent
 
-event OnTimer(int timer)
-    float easing = easeInOutQuad(morphFrame)
-    BodyGen.SetMorph(Player, true, "BigBelly", NONE, bigBellyB * easing + bigBellyA)
-    BodyGen.SetMorph(Player, true, "TummyTuck", NONE, tummyTuckB * easing + tummyTuckA)
-    BodyGen.SetMorph(Player, true, "PregnancyBelly", NONE, pregB * easing + pregA)
-    BodyGen.SetMorph(Player, true, "Giant Belly (coldsteelj)", NONE, giantBellyB * easing + giantBellyA)
+state Morphin
+    event V4F_VoreCore.BodyUpdate(V4F_VoreCore caller, Var[] args)
+        Debug.Trace("Morphin BodyUpdate")
+        ReadBodyUpdateArgs(args)        
+    endevent
 
-    BodyGen.UpdateMorphs(Player)
-    if easing < 1
-        morphFrame += 0.01
-        StartTimer(0.016) ; 60 fps :3
-    else
-        Debug.Trace("Done!")
-    endif
-endevent
+    event OnTimer(int timer)
+        float easing = easeInOutQuad(morphFrame)
+        BodyGen.SetMorph(Player, true, "BigBelly", NONE, bigBellyB * easing + bigBellyA)
+        BodyGen.SetMorph(Player, true, "TummyTuck", NONE, tummyTuckB * easing + tummyTuckA)
+        BodyGen.SetMorph(Player, true, "PregnancyBelly", NONE, pregB * easing + pregA)
+        BodyGen.SetMorph(Player, true, "Giant Belly (coldsteelj)", NONE, giantBellyB * easing + giantBellyA)
+
+        BodyGen.UpdateMorphs(Player)
+        if easing < 1
+            morphFrame += 0.01
+            StartTimer(0.016) ; 60 fps :3
+        else
+            Debug.Trace("Done Morphin")
+            GotoState("")
+        endif
+    endevent
+endstate
 
 ; https://github.com/Michaelangel007/easing
 float function easeLinear(float p)

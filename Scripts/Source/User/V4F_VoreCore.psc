@@ -1,10 +1,12 @@
 Scriptname V4F_VoreCore extends Quest
 
-float consumeVolume
-
 struct Vore
     float food = 0.0
     float prey = 0.0
+    float calories = 0.0
+    float topFat = 0.0
+    float bottomFat = 0.0
+    float bbw = 0.0
 endstruct
 
 struct Body
@@ -32,10 +34,6 @@ EndEvent
 Function Setup()
     PlayerBody = new Body
     PlayerVore = new Vore
-    ; If the belly 100% volume is 60 gallons, and each food is about a gallon, then the volume expressed as a percent should be 1.6%. In integer 10,000ths, it's 160 10,000ths.
-    consumeVolume = 0.016
-
-    RegisterForCustomEvent(self, "VoreUpdate")
 EndFunction
 
 ; ======
@@ -45,10 +43,6 @@ Event Actor.OnPlayerLoadGame(Actor akSender)
 	Setup()
 EndEvent
 
-Event V4F_VoreCore.VoreUpdate(V4F_VoreCore sender, Var[] args)
-    UpdateBody()
-endevent
-
 ; ======
 ; Public
 ; ======
@@ -56,14 +50,36 @@ Function TestHookup(ScriptObject caller)
     Debug.Notification("Called by " + caller)
 EndFunction
 
-function AddFood(int amount, activemagiceffect foodEffect)
-    PlayerVore.food += amount * consumeVolume
-    SendCustomEvent("VoreUpdate")
+function AddFood(float amount, activemagiceffect foodEffect)
+    PlayerVore.food += amount
+    UpdateBody()
+    SendVoreUpdate()
 endfunction
 
+function Digest(float food, float prey, float calories)
+    Debug.Trace("Digest food:" + food + " prey:" + prey + "cal:" + calories)
+    PlayerVore.food -= food
+    if PlayerVore.food < 0.0
+        PlayerVore.food = 0.0
+    endif
+    PlayerVore.prey -= prey
+    if PlayerVore.prey < 0.0
+        PlayerVore.prey = 0.0
+    endif
+    PlayerVore.calories += calories
+    UpdateBody()
+    SendVoreUpdate()
+endfunction
+ 
 ; =======
 ; Private
 ; =======
+function SendVoreUpdate()
+    Var[] args = new Var[1]
+    args[0] = PlayerVore
+    SendCustomEvent("VoreUpdate", args)
+endfunction
+
 function UpdateBody()
     ; PlayerBody.giantBellyUp = Math.Max(0, PlayerVore.prey + (PlayerVore.food / 2) - 14000) * 6 
     if PlayerVore.food >= 0.0 && PlayerVore.food <= 0.1
