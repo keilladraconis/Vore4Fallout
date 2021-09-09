@@ -9,6 +9,12 @@ Actor Player
 float morphFrame
 int morphQueue = 0
 
+float voreBellyA
+float voreBellyB
+float bbwA
+float bbwB
+float giantBellyUpA
+float giantBellyUpB
 float bigBellyA
 float bigBellyB
 float tummyTuckA
@@ -60,6 +66,12 @@ function StartMorph()
 
     morphFrame = 0.0
 
+    voreBellyA = BodyGen.GetMorph(Player, true, "Vore prey belly", NONE)
+    voreBellyB = body.vorePreyBelly - voreBellyA
+    bbwA = BodyGen.GetMorph(Player, true, "SSBBW3 body", NONE)
+    bbwB = body.bbw - bbwA
+    giantBellyUpA = BodyGen.GetMorph(Player, true, "Giant belly up", NONE)
+    giantBellyUpB = body.giantBellyUp - giantBellyUpA
     bigBellyA   = BodyGen.GetMorph(Player, true, "BigBelly", NONE)
     bigBellyB   = body.bigBelly - bigBellyA
     tummyTuckA  = BodyGen.GetMorph(Player, true, "TummyTuck", NONE)
@@ -126,6 +138,9 @@ state Morphin
 
     event OnTimer(int timer)
         float easing = easeInOutQuad(morphFrame)
+        BodyGen.SetMorph(Player, true, "Vore prey belly", NONE, voreBellyB * easing + voreBellyA)
+        BodyGen.SetMorph(Player, true, "SSBBW3 body", NONE, bbwB * easing + bbwA)
+        BodyGen.SetMorph(Player, true, "Giant belly up", NONE, giantBellyUpB * easing + giantBellyUpA)
         BodyGen.SetMorph(Player, true, "BigBelly", NONE, bigBellyB * easing + bigBellyA)
         BodyGen.SetMorph(Player, true, "TummyTuck", NONE, tummyTuckB * easing + tummyTuckA)
         BodyGen.SetMorph(Player, true, "PregnancyBelly", NONE, pregB * easing + pregA)

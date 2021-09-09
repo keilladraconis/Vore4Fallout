@@ -5,12 +5,12 @@ struct Vore
     float prey = 0.0
     float topFat = 0.0
     float bottomFat = 0.0
-    float bbw = 0.0
+    float fat = 0.0
 endstruct
 
 struct Body
     float vorePreyBelly = 0.0
-    float ssbbw = 0.0
+    float bbw = 0.0
     float giantBellyUp = 0.0
     float bigBelly = 0.0
     float tummyTuck = 0.0
@@ -132,7 +132,8 @@ endfunction
 
 function UpdateBody()
     Debug.Trace("UpdateBody Vore:" + PlayerVore)
-    ; PlayerBody.giantBellyUp = Math.Max(0, PlayerVore.prey + (PlayerVore.food / 2) - 14000) * 6 
+    PlayerBody.giantBellyUp = Math.Max(0, PlayerVore.prey + (PlayerVore.food / 2) - 14000) * 6 
+    PlayerBody.bbw = PlayerVore.fat
     if PlayerVore.food >= 0.0 && PlayerVore.food <= 0.1
         PlayerBody.bigBelly         = PlayerVore.food * 10.0
         PlayerBody.tummyTuck        = PlayerVore.food * 10.0
@@ -258,11 +259,11 @@ Function Metabolize(float calories)
 EndFunction
 
 float Function MetabolizeRest(float calories)
-    PlayerVore.bbw += (calories / 3500.0) * 0.005 ; 1/2% per pound of calories
+    PlayerVore.fat += (calories / 3500.0) * 0.005 ; 1/2% per pound of calories
 
-    If PlayerVore.bbw < 0.0
-        float excess = PlayerVore.bbw
-        PlayerVore.bbw = 0.0
+    If PlayerVore.fat < 0.0
+        float excess = PlayerVore.fat
+        PlayerVore.fat = 0.0
         return excess
     Else
         return 0.0
@@ -309,14 +310,4 @@ EndFunction
 
 float Function ButtMaxByAV()
     return Player.GetValue(CharismaAV) / 10.0
-EndFunction
-
-float Function Clamp(float min, float max, float x)
-    If x < min
-        return min
-    ElseIf x > max
-        return max
-    Else
-        return x
-    EndIf
 EndFunction
