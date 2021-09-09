@@ -21,6 +21,16 @@ struct Body
     float breastsT = 0.0
     float breastsD = 0.0
     float breastsF = 0.0
+    float butt = 0.0
+    float buttChubby = 0.0
+    float buttThighs = 0.0
+    float buttWaist = 0.0
+    float buttBack = 0.0
+    float buttBig = 0.0
+    float buttCLegs = 0.0
+    float buttCWaist = 0.0
+    float buttApple = 0.0
+    float buttRound = 0.0
 endstruct
 
 float foodWarp = 1.0
@@ -124,52 +134,110 @@ function UpdateBody()
     Debug.Trace("UpdateBody Vore:" + PlayerVore)
     ; PlayerBody.giantBellyUp = Math.Max(0, PlayerVore.prey + (PlayerVore.food / 2) - 14000) * 6 
     if PlayerVore.food >= 0.0 && PlayerVore.food <= 0.1
-        PlayerBody.bigBelly = PlayerVore.food * 10.0
-        PlayerBody.tummyTuck = PlayerVore.food * 10.0
-        PlayerBody.pregnancyBelly = 0.0
-        PlayerBody.giantBelly = 0.0
+        PlayerBody.bigBelly         = PlayerVore.food * 10.0
+        PlayerBody.tummyTuck        = PlayerVore.food * 10.0
+        PlayerBody.pregnancyBelly   = 0.0
+        PlayerBody.giantBelly       = 0.0
     elseif PlayerVore.food > 0.1 && PlayerVore.food <= 0.15
-        PlayerBody.bigBelly = 1 - PlayerVore.food - 0.1
-        PlayerBody.tummyTuck = 1 - PlayerVore.food - 0.1
-        PlayerBody.pregnancyBelly = (PlayerVore.food - 0.1) / 0.15 * 0.5
-        PlayerBody.giantBelly = 0.0
+        PlayerBody.bigBelly         = 1 - PlayerVore.food - 0.1
+        PlayerBody.tummyTuck        = 1 - PlayerVore.food - 0.1
+        PlayerBody.pregnancyBelly   = (PlayerVore.food - 0.1) / 0.15 * 0.5
+        PlayerBody.giantBelly       = 0.0
     elseif PlayerVore.food > 0.15 && PlayerVore.food <= 0.2
-        PlayerBody.bigBelly = 0.0
-        PlayerBody.tummyTuck = 0.0
-        PlayerBody.pregnancyBelly = 0.5 - ((PlayerVore.food - 0.15) * 10)
-        PlayerBody.giantBelly = (PlayerVore.food - 0.15) / 0.05 * 0.2
+        PlayerBody.bigBelly         = 0.0
+        PlayerBody.tummyTuck        = 0.0
+        PlayerBody.pregnancyBelly   = 0.5 - ((PlayerVore.food - 0.15) * 10)
+        PlayerBody.giantBelly       = (PlayerVore.food - 0.15) / 0.05 * 0.2
     elseif PlayerVore.food > 0.2
-        PlayerBody.bigBelly = 0.0
-        PlayerBody.tummyTuck = 0.0
-        PlayerBody.pregnancyBelly = 0.0
-        PlayerBody.giantBelly = PlayerVore.food
+        PlayerBody.bigBelly         = 0.0
+        PlayerBody.tummyTuck        = 0.0
+        PlayerBody.pregnancyBelly   = 0.0
+        PlayerBody.giantBelly       = PlayerVore.food
     endif
 
     if PlayerVore.topFat >= 0.0 && PlayerVore.topFat <= 0.25
-        PlayerBody.breasts = PlayerVore.topFat / 0.25
-        PlayerBody.breastsH = 0.0
-        PlayerBody.breastsT = 0.0
-        PlayerBody.breastsD = 0.0
-        PlayerBody.breastsF = 0.0
+        PlayerBody.breasts    = PlayerVore.topFat / 0.25
+        PlayerBody.breastsH   = 0.0
+        PlayerBody.breastsT   = 0.0
+        PlayerBody.breastsD   = 0.0
+        PlayerBody.breastsF   = 0.0
     elseif PlayerVore.topFat > 0.25 && PlayerVore.topFat <= 0.5
-        PlayerBody.breasts = 1.0
-        PlayerBody.breastsH = (PlayerVore.topFat - 0.25) / 0.25
-        PlayerBody.breastsT = (PlayerVore.topFat - 0.25) / 0.25
-        PlayerBody.breastsD = 0.0
-        PlayerBody.breastsF = 0.0
+        PlayerBody.breasts    = 1.0
+        PlayerBody.breastsH   = (PlayerVore.topFat - 0.25) / 0.25
+        PlayerBody.breastsT   = (PlayerVore.topFat - 0.25) / 0.25
+        PlayerBody.breastsD   = 0.0
+        PlayerBody.breastsF   = 0.0
     elseif PlayerVore.topFat > 0.5 && PlayerVore.topFat <= 0.75
-        PlayerBody.breasts = 1.0
-        PlayerBody.breastsH = 1.0
-        PlayerBody.breastsT = 1 - ((PlayerVore.topFat - 0.5) * 4)
-        PlayerBody.breastsD = (PlayerVore.topFat - 0.5) / 0.25
-        PlayerBody.breastsF = 0.0
+        PlayerBody.breasts    = 1.0
+        PlayerBody.breastsH   = 1.0
+        PlayerBody.breastsT   = 1 - ((PlayerVore.topFat - 0.5) * 4)
+        PlayerBody.breastsD   = (PlayerVore.topFat - 0.5) / 0.25
+        PlayerBody.breastsF   = 0.0
     elseif PlayerVore.topFat > 0.75
-        PlayerBody.breasts = 1.0
-        PlayerBody.breastsH = 1.0
-        PlayerBody.breastsT = 0.0
-        PlayerBody.breastsD = 1.0
-        PlayerBody.breastsF = (PlayerVore.topFat - 0.75) / 0.25
+        PlayerBody.breasts    = 1.0
+        PlayerBody.breastsH   = 1.0
+        PlayerBody.breastsT   = 0.0
+        PlayerBody.breastsD   = 1.0
+        PlayerBody.breastsF   = (PlayerVore.topFat - 0.75) / 0.25
     endif
+
+    if PlayerVore.bottomFat >= 0.0 && PlayerVore.bottomFat <= 0.1
+        PlayerBody.butt       = PlayerVore.bottomFat / 0.1
+        PlayerBody.buttChubby = 0.0
+        PlayerBody.buttThighs = 0.0
+        PlayerBody.buttWaist  = 0.0
+        PlayerBody.buttBig    = 0.0
+        PlayerBody.buttBack   = 0.0
+        PlayerBody.buttCLegs  = 0.0
+        PlayerBody.buttCWaist = 0.0
+        PlayerBody.buttApple  = 0.0
+        PlayerBody.buttRound  = 0.0
+    elseif PlayerVore.bottomfat > 0.1 && PlayerVore.bottomFat <= 0.2
+        PlayerBody.butt       = 1.0
+        PlayerBody.buttChubby = (PlayerVore.bottomfat - 0.1) / 0.1
+        PlayerBody.buttThighs = (PlayerVore.bottomfat - 0.1) / 0.1
+        PlayerBody.buttWaist  = (PlayerVore.bottomfat - 0.1) / 0.1
+        PlayerBody.buttBig    = 0.0
+        PlayerBody.buttBack   = 0.0
+        PlayerBody.buttCLegs  = 0.0
+        PlayerBody.buttCWaist = 0.0
+        PlayerBody.buttApple  = 0.0
+        PlayerBody.buttRound  = 0.0
+    elseif PlayerVore.bottomfat > 0.2 && PlayerVore.bottomFat <= 0.6
+        PlayerBody.butt       = 1.0
+        PlayerBody.buttChubby = 1.0
+        PlayerBody.buttThighs = 1.0
+        PlayerBody.buttWaist  = 1.0
+        PlayerBody.buttBig    = (PlayerVore.bottomfat - 0.2) / 0.4
+        PlayerBody.buttBack   = (PlayerVore.bottomfat - 0.2) / 0.4
+        PlayerBody.buttCLegs  = (PlayerVore.bottomfat - 0.2) / 0.4
+        PlayerBody.buttCWaist = (PlayerVore.bottomfat - 0.2) / 0.4
+        PlayerBody.buttApple  = 0.0
+        PlayerBody.buttRound  = 0.0
+    elseif PlayerVore.bottomfat > 0.6 && PlayerVore.bottomFat <= 0.9
+        PlayerBody.butt       = 1.0
+        PlayerBody.buttChubby = 1.0
+        PlayerBody.buttThighs = 1.0
+        PlayerBody.buttWaist  = 1.0
+        PlayerBody.buttBig    = 1.0
+        PlayerBody.buttBack   = 1.0
+        PlayerBody.buttCLegs  = 1.0
+        PlayerBody.buttCWaist = 1.0
+        PlayerBody.buttApple  = 2 * ((PlayerVore.bottomfat - 0.2) / 0.4) 
+        PlayerBody.buttRound  = 0.0
+    elseif PlayerVore.bottomfat > 0.9
+        PlayerBody.butt       = 1.0
+        PlayerBody.buttChubby = 1.0
+        PlayerBody.buttThighs = 1.0
+        PlayerBody.buttWaist  = 1.0
+        PlayerBody.buttBig    = 1.0
+        PlayerBody.buttBack   = 1.0
+        PlayerBody.buttCLegs  = 1.0
+        PlayerBody.buttCWaist = 1.0
+        PlayerBody.buttApple  = 2.0
+        PlayerBody.buttRound  = (PlayerVore.bottomfat - 0.9) / 0.1
+    endif
+        
     Debug.Trace("UpdateBody Body:" + PlayerBody)
 
     SendCustomEvent("BodyUpdate")

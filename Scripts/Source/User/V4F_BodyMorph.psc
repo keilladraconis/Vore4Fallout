@@ -27,6 +27,26 @@ float breastsDA
 float breastsDB
 float breastsFA
 float breastsFB
+float buttA
+float buttB
+float buttChubbyA
+float buttChubbyB
+float buttThighsA
+float buttThighsB
+float buttWaistA
+float buttWaistB
+float buttBackA
+float buttBackB
+float buttBigA
+float buttBigB
+float buttCLegsA
+float buttCLegsB
+float buttCWaistA
+float buttCWaistB
+float buttAppleA
+float buttAppleB
+float buttRoundA
+float buttRoundB
 
 event OnInit()
     Player = Game.GetPlayer()
@@ -39,24 +59,45 @@ function StartMorph()
     Debug.Trace("MorphBody:" + body)
 
     morphFrame = 0.0
-    bigBellyA = BodyGen.GetMorph(Player, true, "BigBelly", NONE)
-    bigBellyB = body.bigBelly - bigBellyA
-    tummyTuckA = BodyGen.GetMorph(Player, true, "TummyTuck", NONE)
-    tummyTuckB = body.tummyTuck - tummyTuckA
-    pregA = BodyGen.GetMorph(Player, true, "PregnancyBelly", NONE)
-    pregB = body.pregnancyBelly - pregA
+
+    bigBellyA   = BodyGen.GetMorph(Player, true, "BigBelly", NONE)
+    bigBellyB   = body.bigBelly - bigBellyA
+    tummyTuckA  = BodyGen.GetMorph(Player, true, "TummyTuck", NONE)
+    tummyTuckB  = body.tummyTuck - tummyTuckA
+    pregA       = BodyGen.GetMorph(Player, true, "PregnancyBelly", NONE)
+    pregB       = body.pregnancyBelly - pregA
     giantBellyA = BodyGen.GetMorph(Player, true, "Giant Belly (coldsteelj)", NONE)
     giantBellyB = body.giantBelly - giantBellyA
-    breastsA = BodyGen.GetMorph(Player, true, "Breasts", NONE)
-    breastsB = body.breasts - breastsA
-    breastsHA = BodyGen.GetMorph(Player, true, "BreastsNewSH", NONE)
-    breastsHB = body.breastsH - breastsHA
-    breastsTA = BodyGen.GetMorph(Player, true, "BreastsTogether", NONE)
-    breastsTB = body.breastsT - breastsTA
-    breastsDA = BodyGen.GetMorph(Player, true, "DoubleMelon", NONE)
-    breastsDB = body.breastsD - breastsDA
-    breastsFA = BodyGen.GetMorph(Player, true, "BreastFantasy", NONE)
-    breastsFB = body.breastsF - breastsFA
+    breastsA    = BodyGen.GetMorph(Player, true, "Breasts", NONE)
+    breastsB    = body.breasts - breastsA
+    breastsHA   = BodyGen.GetMorph(Player, true, "BreastsNewSH", NONE)
+    breastsHB   = body.breastsH - breastsHA
+    breastsTA   = BodyGen.GetMorph(Player, true, "BreastsTogether", NONE)
+    breastsTB   = body.breastsT - breastsTA
+    breastsDA   = BodyGen.GetMorph(Player, true, "DoubleMelon", NONE)
+    breastsDB   = body.breastsD - breastsDA
+    breastsFA   = BodyGen.GetMorph(Player, true, "BreastFantasy", NONE)
+    breastsFB   = body.breastsF - breastsFA
+    buttA       = BodyGen.GetMorph(Player, true, "Butt", NONE)
+    buttB       = body.butt - buttA
+    buttChubbyA = BodyGen.GetMorph(Player, true, "ChubbyButt", NONE)
+    buttChubbyB = body.buttChubby - buttChubbyA
+    buttThighsA = BodyGen.GetMorph(Player, true, "Thighs", NONE)
+    buttThighsB = body.buttThighs - buttThighsA
+    buttWaistA  = BodyGen.GetMorph(Player, true, "Waist", NONE)
+    buttWaistB  = body.buttWaist - buttWaistA
+    buttBackA   = BodyGen.GetMorph(Player, true, "Back", NONE)
+    buttBackB   = body.buttBack - buttBackA
+    buttBigA    = BodyGen.GetMorph(Player, true, "BigButt", NONE)
+    buttBigB    = body.buttBig - buttBigA
+    buttCLegsA  = BodyGen.GetMorph(Player, true, "ChubbyLegs", NONE)
+    buttCLegsB  = body.buttCLegs - buttCLegsA
+    buttCWaistA = BodyGen.GetMorph(Player, true, "ChubbyWaist", NONE)
+    buttCWaistB = body.buttCWaist - buttCWaistA
+    buttAppleA  = BodyGen.GetMorph(Player, true, "AppleCheeks", NONE)
+    buttAppleB  = body.buttApple - buttAppleA
+    buttRoundA  = BodyGen.GetMorph(Player, true, "RoundAss", NONE)
+    buttRoundB  = body.buttRound - buttRoundA
     
     StartTimer(0.016, 10) ; 60 fps :3
     Debug.Trace("Morphin")
@@ -92,8 +133,18 @@ state Morphin
         BodyGen.SetMorph(Player, true, "Breasts", NONE, breastsB * easing + breastsA)
         BodyGen.SetMorph(Player, true, "BreastsNewSH", NONE, breastsHB * easing + breastsHA)
         BodyGen.SetMorph(Player, true, "BreastsTogether", NONE, breastsTB * easing + breastsTA)
-        BodyGen.SetMorph(Player, true, "DoubleMelon", NONE, breastsDA * easing + breastsDB)
-        BodyGen.SetMorph(Player, true, "BreastFantasy", NONE, breastsFA * easing + breastsFA)
+        BodyGen.SetMorph(Player, true, "DoubleMelon", NONE, breastsDB * easing + breastsDA)
+        BodyGen.SetMorph(Player, true, "BreastFantasy", NONE, breastsFB * easing + breastsFA)
+        BodyGen.SetMorph(Player, true, "Butt", NONE, buttB * easing + buttA)
+        BodyGen.SetMorph(Player, true, "ChubbyButt", NONE, buttChubbyB * easing + buttChubbyA)
+        BodyGen.SetMorph(Player, true, "Thighs", NONE, buttThighsB * easing + buttThighsA)
+        BodyGen.SetMorph(Player, true, "Waist", NONE, buttWaistB * easing + buttWaistA)
+        BodyGen.SetMorph(Player, true, "Back", NONE, buttBackB * easing + buttBackA)
+        BodyGen.SetMorph(Player, true, "BigButt", NONE, buttBigB * easing + buttBigA)
+        BodyGen.SetMorph(Player, true, "ChubbyLegs", NONE, buttCLegsB * easing + buttCLegsA)
+        BodyGen.SetMorph(Player, true, "ChubbyWaist", NONE, buttCWaistB * easing + buttCWaistA)
+        BodyGen.SetMorph(Player, true, "AppleCheeks", NONE, buttAppleB * easing + buttAppleA)
+        BodyGen.SetMorph(Player, true, "RoundAss", NONE, buttRoundB * easing + buttRoundA)
 
         BodyGen.UpdateMorphs(Player)
         if easing < 1.0 && morphFrame < 1.0
