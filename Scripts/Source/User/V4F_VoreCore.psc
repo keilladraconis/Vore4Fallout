@@ -36,6 +36,8 @@ endstruct
 float foodWarp = 1.0
 float calorieWarp = 1.0
 
+float sleepStart
+
 Body pPlayerBody
 Body Property PlayerBody
     Body function get()
@@ -63,6 +65,7 @@ ActorValue HealthAV
 CustomEvent VoreUpdate
 CustomEvent BodyUpdate
 CustomEvent CalorieUpdate
+CustomEvent SleepUpdate
 
 ; Called when the quest initializes
 Event OnInit()
@@ -82,7 +85,8 @@ Function Setup()
     AgilityAV = Game.GetAgilityAV()
     LuckAV = Game.GetLuckAV()
     HealthAV = Game.GetHealthAV()
-    WarpSpeedMode(10.0)
+    WarpSpeedMode(1.0)
+    Self.RegisterForPlayerSleep()
 EndFunction
 
 function WarpSpeedMode(float warp)
@@ -95,6 +99,18 @@ endfunction
 ; ======
 Event Actor.OnPlayerLoadGame(Actor akSender)
 	Setup()
+EndEvent
+
+Event OnPlayerSleepStart(float afSleepStartTime, float afDesiredSleepEndTime, ObjectReference akBed)
+    sleepStart = afSleepStartTime
+EndEvent
+
+Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
+    ; Time is reported as a floating point number where 1 is a whole day. 1 hour is 1/24 expressed as a decimal.
+    float timeDelta = (Utility.GetCurrentGameTime() - SleepStart) / (1.0 / 24.0) * 60 * 60
+    Var[] args = new Var[1]
+    args[0] = timeDelta
+    SendCustomEvent("SleepUpdate", args)
 EndEvent
 
 ; ======
