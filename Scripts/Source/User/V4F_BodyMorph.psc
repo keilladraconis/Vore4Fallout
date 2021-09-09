@@ -187,5 +187,5 @@ endfunction
 
 ; For some reason, F4 has bullshit trig functions that make no sense.
 float function easeOutElastic(float p)
-    return 1 + (Math.pow(2, 10 * -p) * Math.sin((-p * 40 - 3) * PI / 6))
+    return 1 + (Math.pow(2, 10 * -p) * Math.DegreesToRadians(Math.sin(Math.RadiansToDegrees((-p * 40 - 3) * PI / 6))))
 endfunction

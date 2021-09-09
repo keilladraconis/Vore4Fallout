@@ -35,8 +35,10 @@ endstruct
 
 float foodWarp = 1.0
 float calorieWarp = 1.0
-
 float sleepStart
+
+float metabolicRate = -2.08
+float digestHealthRestore = 0.001 ; 1 hp per 1000 calories 
 
 Body pPlayerBody
 Body Property PlayerBody
@@ -85,8 +87,11 @@ Function Setup()
     AgilityAV = Game.GetAgilityAV()
     LuckAV = Game.GetLuckAV()
     HealthAV = Game.GetHealthAV()
+    metabolicRate = -2.08 ; Calories burned per 1 second.
+    digestHealthRestore = 0.001
     WarpSpeedMode(1.0)
     Self.RegisterForPlayerSleep()
+    StartTimer(10.0)
 EndFunction
 
 function WarpSpeedMode(float warp)
@@ -106,12 +111,21 @@ Event OnPlayerSleepStart(float afSleepStartTime, float afDesiredSleepEndTime, Ob
 EndEvent
 
 Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
-    ; Time is reported as a floating point number where 1 is a whole day. 1 hour is 1/24 expressed as a decimal.
+    ; Time is reported as a floating point number where 1 is a whole day. 1 hour is 1/24 expressed as a decimal. (1.0 / 24.0) * 60 * 60 = 150
     float timeDelta = (Utility.GetCurrentGameTime() - SleepStart) / (1.0 / 24.0) * 60 * 60
+    Metabolize(metabolicRate * Player.GetValue(AgilityAV) * timeDelta * calorieWarp) ; Represents the base metabolic rate of the player. Burn calories.
+    UpdateBody()
     Var[] args = new Var[1]
     args[0] = timeDelta
     SendCustomEvent("SleepUpdate", args)
 EndEvent
+
+Event OnTimer(int timer)
+    Debug.Trace("Metabolism..." + metabolicRate * 10.0 * Player.GetValue(AgilityAV) * calorieWarp)
+    Metabolize(metabolicRate * Player.GetValue(AgilityAV) * calorieWarp) ; Represents the base metabolic rate of the player. Burn calories.
+    UpdateBody()
+    StartTimer(10.0)
+endevent
 
 ; ======
 ; Public
@@ -286,10 +300,16 @@ Function Metabolize(float calories)
         float topCalories = MetabolizeTop(calories / 2.0)
         calories = MetabolizeBottom((calories / 2.0) + topCalories)
         calories = MetabolizeRest(calories)
-    Else
+    Elseif PlayerVore.fat > 0.0 || PlayerVore.topFat > 0.0 || PlayerVore.bottomFat > 0.0
+        Debug.Trace("HealthRestore: " + -calories * digestHealthRestore)
+        Player.RestoreValue(HealthAV, -calories * digestHealthRestore) ; Heal slowly when burning fat
         calories = MetabolizeRest(calories)
         float bottomCalories = MetabolizeBottom(calories / 2.0)
         calories = MetabolizeTop((calories / 2.0) + bottomCalories)
+    else
+        PlayerVore.fat = 0.0
+        PlayerVore.topFat = 0.0
+        PlayerVore.bottomFat = 0.0
     EndIf
 EndFunction
 
@@ -299,7 +319,7 @@ float Function MetabolizeRest(float calories)
     If PlayerVore.fat < 0.0
         float excess = PlayerVore.fat
         PlayerVore.fat = 0.0
-        return excess
+        return excess * 3500 * 200
     Else
         return 0.0
     EndIf
