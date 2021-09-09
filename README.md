@@ -18,24 +18,29 @@ Time is fun. Beds and sleeping have an actual purpose other than advancing the c
 ## Not Included
 Frankly, I think most of this stuff should be scoped to companion mods. A great deal of the excessive complexity of both of the inspiration mods is their everything-but-the-kitchen-sink approach. 
 
-* Quests, Books, Items, Weapons.
-* Male vore.
+* Quests, Books, Items, Weapons
+* Male vore
 * Atomic Beauty support
 * UI widgets
 * Configurability
 * Companion stuff
+* Sound Effects
+
+## Sweet Features
+* Smooth morphing between vore states.
+* Realistic metabolism
 
 ## Feature Map
 - [x] Belly bloating from food.
-- [x] Digestion to calories - Calories are distributed over the weight gain simulation.
-- [x] Accelerate metabolism while sleeping
+- [ ] Digestion to calories - Calories are distributed over the weight gain simulation.
+- [ ] Accelerate metabolism while sleeping
 - [ ] Accelerate metabolism after running
-- [x] Belly limit. Overeating damages you, levels up capacity
+- [ ] Belly limit. Overeating damages you, levels up capacity
 - [ ] Fatness grants damage reduction
 - [ ] Fatness makes you slower
-- [x] Digesting grants temporary health regeneration
-- [x] Weight Gain: Distribute calories to breasts
-- [x] Weight Gain: Distribute calories to butt
+- [ ] Digesting grants temporary health regeneration
+- [ ] Weight Gain: Distribute calories to breasts
+- [ ] Weight Gain: Distribute calories to butt
 - [ ] Strength: More damage from stomach acid. More muscle growth.
 - [ ] Perception: Digest faster and have higher regeneration
 - [ ] Endurance: More belly capacity

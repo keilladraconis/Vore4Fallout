@@ -7,10 +7,10 @@ int version = 0
 float consumeVolume =  0.016
 
 event OnEffectStart(Actor akTarget, Actor akCaster)
-    if version < 1
-        Update(1)
+    if version < 2
+        Update(2)
     endif
-    VoreCore.AddFood(consumeVolume * 10, self)
+    VoreCore.AddFood(consumeVolume, self)
 endevent
 
 function Update(int newVersion)

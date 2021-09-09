@@ -29,11 +29,10 @@ event V4F_VoreCore.VoreUpdate(V4F_VoreCore caller, Var[] args)
         Update(1)
     endif
 
-    V4F_VoreCore:Vore vore = (args[0] as V4F_VoreCore:Vore)
+    V4F_VoreCore:Vore vore = VoreCore.PlayerVore
     stomachPrey = vore.prey
     stomachFood = vore.food
     StartTimer(10.0, 1)
-    Debug.Trace("prey:" + stomachPrey + " food:" + stomachFood)
 endevent
 
 state Digesting
@@ -41,18 +40,18 @@ state Digesting
     event V4F_VoreCore.VoreUpdate(V4F_VoreCore caller, Var[] args)
         Debug.Trace("DigestTimer VoreUpdate")
 
-        V4F_VoreCore:Vore vore = args[0] as V4F_VoreCore:Vore
+        V4F_VoreCore:Vore vore = VoreCore.PlayerVore
         stomachPrey = vore.prey
         stomachFood = vore.food
         StartTimer(10.0, 1)
     endevent
 
     event OnTimer(int timer)
-        Debug.Trace("DigestTimer")
+        Debug.Trace("DigestTimer - prey:" + stomachPrey + " food:" + stomachFood)
         if stomachPrey > 0
             VoreCore.Digest(digestionRate * 2, digestionRate, 0)
         elseif stomachFood > 0  
-            VoreCore.Digest(digestionRate * 10, 0, digestionRate * calorieDensity)
+            VoreCore.Digest(digestionRate, 0, digestionRate * calorieDensity)
         endif
         GoToState("")
     endevent
