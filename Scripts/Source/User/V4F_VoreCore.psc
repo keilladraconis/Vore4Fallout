@@ -58,6 +58,7 @@ ActorValue CharismaAV
 ActorValue IntelligenceAV
 ActorValue AgilityAV
 ActorValue LuckAV
+ActorValue HealthAV
 
 CustomEvent VoreUpdate
 CustomEvent BodyUpdate
@@ -80,6 +81,7 @@ Function Setup()
     IntelligenceAV = Game.GetIntelligenceAV()
     AgilityAV = Game.GetAgilityAV()
     LuckAV = Game.GetLuckAV()
+    HealthAV = Game.GetHealthAV()
     WarpSpeedMode(10.0)
 EndFunction
 
@@ -104,9 +106,26 @@ EndFunction
 
 function AddFood(float amount, activemagiceffect foodEffect)
     PlayerVore.food += amount * foodWarp
+    float maxBelly = BellyMaxByAV()
+    If PlayerVore.food > maxBelly
+        float excess = PlayerVore.food - maxBelly
+        PlayerVore.food = maxBelly
+        ; EndurancePerkProgress += excess * EndurancePerkInc
+        ; Debug.Trace("Overeat: " + excess + " EndurancePerkProgress: " + Data.EndurancePerkProgress)
+        If foodeffect != NONE
+            foodeffect.Dispel()
+        EndIf
+        Player.DamageValue(HealthAV, Math.Min(50, excess * 1000)) ; In case of warp, don't just die instantly.
+    EndIf
+
     UpdateBody()
     SendVoreUpdate()
 endfunction
+
+float Function BellyMaxByAV()
+    ; An hockey-stick function targeting 6.0 at Endurance 10
+    return 0.06 * Math.pow(Player.GetValue(EnduranceAV) / 2.8, 3)
+EndFunction
 
 function Digest(float food, float prey, float calories)
     Debug.Trace("Digest food:" + food + " prey:" + prey + "cal:" + calories)
