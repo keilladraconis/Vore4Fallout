@@ -65,10 +65,6 @@ ActorValue AgilityAV
 ActorValue LuckAV
 ActorValue HealthAV
 
-CustomEvent VoreUpdate
-CustomEvent CalorieUpdate
-CustomEvent SleepUpdate
-
 ; Called when the quest initializes
 Event OnInit()
     Setup()
@@ -89,7 +85,7 @@ Function Setup()
     HealthAV = Game.GetHealthAV()
     metabolicRate = -2.08 ; Calories burned per 1 second.
     digestHealthRestore = 0.001
-    WarpSpeedMode(10.0)
+    WarpSpeedMode(1.0)
     Self.RegisterForPlayerSleep()
     StartTimer(60.0 / timeWarp, 1)
 EndFunction
@@ -116,9 +112,6 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
     float timeDelta = (Utility.GetCurrentGameTime() - SleepStart) / (1.0 / 24.0) * 60 * 60
     Metabolize(metabolicRate * Player.GetValue(AgilityAV) * timeDelta * calorieWarp) ; Represents the base metabolic rate of the player. Burn calories.
     UpdateBody()
-    Var[] args = new Var[1]
-    args[0] = timeDelta
-    SendCustomEvent("SleepUpdate", args)
 EndEvent
 
 Event OnTimer(int timer)
@@ -138,17 +131,17 @@ EndFunction
 
 function AddFood(float amount, activemagiceffect foodEffect)
     PlayerVore.food += amount * foodWarp
-    ; float maxBelly = BellyMaxByAV()
-    ; If PlayerVore.food > maxBelly
-    ;     float excess = PlayerVore.food - maxBelly
-    ;     PlayerVore.food = maxBelly
-    ;     ; EndurancePerkProgress += excess * EndurancePerkInc
-    ;     ; Debug.Trace("Overeat: " + excess + " EndurancePerkProgress: " + Data.EndurancePerkProgress)
-    ;     If foodeffect != NONE
-    ;         foodeffect.Dispel()
-    ;     EndIf
-    ;     Player.DamageValue(HealthAV, Math.Min(50, excess * 1000)) ; In case of warp, don't just die instantly.
-    ; EndIf
+    float maxBelly = BellyMaxByAV()
+    If PlayerVore.food > maxBelly
+        float excess = PlayerVore.food - maxBelly
+        PlayerVore.food = maxBelly
+        ; EndurancePerkProgress += excess * EndurancePerkInc
+        ; Debug.Trace("Overeat: " + excess + " EndurancePerkProgress: " + Data.EndurancePerkProgress)
+        If foodeffect != NONE
+            foodeffect.Dispel()
+        EndIf
+        Player.DamageValue(HealthAV, Math.Min(50, excess * 1000)) ; In case of warp, don't just die instantly.
+    EndIf
     UpdateBody()
     MorphBody()
 endfunction
@@ -175,10 +168,6 @@ endfunction
 ; =======
 ; Private
 ; =======
-function SendVoreUpdate()
-    SendCustomEvent("VoreUpdate")
-endfunction
-
 function UpdateBody()
     Debug.Trace("UpdateBody Vore:" + PlayerVore)
     PlayerBody.bbw = PlayerVore.fat
@@ -287,12 +276,9 @@ function UpdateBody()
         PlayerBody.buttApple  = 2.0
         PlayerBody.buttRound  = (PlayerVore.bottomfat - 0.9) / 0.1
     endif
-        
-    Debug.Trace("UpdateBody Body:" + PlayerBody)
 endfunction
 
 function MorphBody()
-    Debug.Trace("MorphBody")
     BodyGen.SetMorph(Player, true, "Vore prey belly", NONE, PlayerBody.vorePreyBelly)
     BodyGen.SetMorph(Player, true, "SSBBW3 body", NONE, PlayerBody.bbw)
     BodyGen.SetMorph(Player, true, "Giant belly up", NONE, PlayerBody.giantBellyUp)
@@ -315,21 +301,16 @@ function MorphBody()
     BodyGen.SetMorph(Player, true, "ChubbyWaist", NONE, PlayerBody.buttCWaist)
     BodyGen.SetMorph(Player, true, "AppleCheeks", NONE, PlayerBody.buttApple)
     BodyGen.SetMorph(Player, true, "RoundAss", NONE, PlayerBody.buttRound)
-
-    Debug.Trace("MorphBody: " + BodyGen.GetMorph(Player, true, "Giant Belly (coldsteelj)", NONE))
-    Debug.Trace("UpdateMorphs")
     BodyGen.UpdateMorphs(Player)
 endfunction
 
 ; Metabolism
 Function Metabolize(float calories)
-    Debug.Trace("Metabolizing: " + calories)
     If calories > 0
         float topCalories = MetabolizeTop(calories / 2.0)
         calories = MetabolizeBottom((calories / 2.0) + topCalories)
         calories = MetabolizeRest(calories)
     Elseif PlayerVore.fat > 0.0 || PlayerVore.topFat > 0.0 || PlayerVore.bottomFat > 0.0
-        Debug.Trace("HealthRestore: " + -calories * digestHealthRestore)
         Player.RestoreValue(HealthAV, -calories * digestHealthRestore) ; Heal slowly when burning fat
         calories = MetabolizeRest(calories)
         float bottomCalories = MetabolizeBottom(calories / 2.0)
