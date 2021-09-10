@@ -35,6 +35,7 @@ endstruct
 
 float foodWarp = 1.0
 float calorieWarp = 1.0
+float timeWarp = 1.0
 float sleepStart
 
 float metabolicRate = -2.08
@@ -65,7 +66,6 @@ ActorValue LuckAV
 ActorValue HealthAV
 
 CustomEvent VoreUpdate
-CustomEvent BodyUpdate
 CustomEvent CalorieUpdate
 CustomEvent SleepUpdate
 
@@ -89,14 +89,15 @@ Function Setup()
     HealthAV = Game.GetHealthAV()
     metabolicRate = -2.08 ; Calories burned per 1 second.
     digestHealthRestore = 0.001
-    WarpSpeedMode(1.0)
+    WarpSpeedMode(10.0)
     Self.RegisterForPlayerSleep()
-    StartTimer(10.0)
+    StartTimer(60.0 / timeWarp, 1)
 EndFunction
 
 function WarpSpeedMode(float warp)
     foodWarp = warp
     calorieWarp = warp
+    timeWarp = warp
 endfunction
 
 ; ======
@@ -121,10 +122,11 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
 EndEvent
 
 Event OnTimer(int timer)
-    Debug.Trace("Metabolism..." + metabolicRate * 10.0 * Player.GetValue(AgilityAV) * calorieWarp)
-    Metabolize(metabolicRate * Player.GetValue(AgilityAV) * calorieWarp) ; Represents the base metabolic rate of the player. Burn calories.
+    Debug.Trace("OnTimer" + timer)
+    ; Metabolize(metabolicRate * 60 * Player.GetValue(AgilityAV) * calorieWarp) ; Represents the base metabolic rate of the player. Burn calories.
     UpdateBody()
-    StartTimer(10.0)
+    MorphBody()
+    StartTimer(60.0 / timeWarp, 1)
 endevent
 
 ; ======
@@ -136,20 +138,19 @@ EndFunction
 
 function AddFood(float amount, activemagiceffect foodEffect)
     PlayerVore.food += amount * foodWarp
-    float maxBelly = BellyMaxByAV()
-    If PlayerVore.food > maxBelly
-        float excess = PlayerVore.food - maxBelly
-        PlayerVore.food = maxBelly
-        ; EndurancePerkProgress += excess * EndurancePerkInc
-        ; Debug.Trace("Overeat: " + excess + " EndurancePerkProgress: " + Data.EndurancePerkProgress)
-        If foodeffect != NONE
-            foodeffect.Dispel()
-        EndIf
-        Player.DamageValue(HealthAV, Math.Min(50, excess * 1000)) ; In case of warp, don't just die instantly.
-    EndIf
-
+    ; float maxBelly = BellyMaxByAV()
+    ; If PlayerVore.food > maxBelly
+    ;     float excess = PlayerVore.food - maxBelly
+    ;     PlayerVore.food = maxBelly
+    ;     ; EndurancePerkProgress += excess * EndurancePerkInc
+    ;     ; Debug.Trace("Overeat: " + excess + " EndurancePerkProgress: " + Data.EndurancePerkProgress)
+    ;     If foodeffect != NONE
+    ;         foodeffect.Dispel()
+    ;     EndIf
+    ;     Player.DamageValue(HealthAV, Math.Min(50, excess * 1000)) ; In case of warp, don't just die instantly.
+    ; EndIf
     UpdateBody()
-    SendVoreUpdate()
+    MorphBody()
 endfunction
 
 float Function BellyMaxByAV()
@@ -169,7 +170,6 @@ function Digest(float food, float prey, float calories)
     endif
     Metabolize(calories * calorieWarp)
     UpdateBody()
-    SendVoreUpdate()
 endfunction
  
 ; =======
@@ -181,8 +181,8 @@ endfunction
 
 function UpdateBody()
     Debug.Trace("UpdateBody Vore:" + PlayerVore)
-    PlayerBody.giantBellyUp = Math.Max(0, PlayerVore.prey + (PlayerVore.food / 2) - 14000) * 6 
     PlayerBody.bbw = PlayerVore.fat
+    PlayerBody.giantBellyUp = Math.Max(0, PlayerVore.prey + (PlayerVore.food / 2) - 14000) * 6 
     if PlayerVore.food >= 0.0 && PlayerVore.food <= 0.1
         PlayerBody.bigBelly         = PlayerVore.food * 10.0
         PlayerBody.tummyTuck        = PlayerVore.food * 10.0
@@ -289,8 +289,36 @@ function UpdateBody()
     endif
         
     Debug.Trace("UpdateBody Body:" + PlayerBody)
+endfunction
 
-    SendCustomEvent("BodyUpdate")
+function MorphBody()
+    Debug.Trace("MorphBody")
+    BodyGen.SetMorph(Player, true, "Vore prey belly", NONE, PlayerBody.vorePreyBelly)
+    BodyGen.SetMorph(Player, true, "SSBBW3 body", NONE, PlayerBody.bbw)
+    BodyGen.SetMorph(Player, true, "Giant belly up", NONE, PlayerBody.giantBellyUp)
+    BodyGen.SetMorph(Player, true, "BigBelly", NONE, PlayerBody.bigBelly)
+    BodyGen.SetMorph(Player, true, "TummyTuck", NONE, PlayerBody.tummyTuck)
+    BodyGen.SetMorph(Player, true, "PregnancyBelly", NONE, PlayerBody.pregnancyBelly)
+    BodyGen.SetMorph(Player, true, "Giant belly (coldsteelj)", NONE, PlayerBody.giantBelly)
+    BodyGen.SetMorph(Player, true, "Breasts", NONE, PlayerBody.breasts)
+    BodyGen.SetMorph(Player, true, "BreastsNewSH", NONE, PlayerBody.breastsH)
+    BodyGen.SetMorph(Player, true, "BreastsTogether", NONE, PlayerBody.breastsT)
+    BodyGen.SetMorph(Player, true, "DoubleMelon", NONE, PlayerBody.breastsD)
+    BodyGen.SetMorph(Player, true, "BreastFantasy", NONE, PlayerBody.breastsF)
+    BodyGen.SetMorph(Player, true, "Butt", NONE, PlayerBody.butt)
+    BodyGen.SetMorph(Player, true, "ChubbyButt", NONE, PlayerBody.buttChubby)
+    BodyGen.SetMorph(Player, true, "Thighs", NONE, PlayerBody.buttThighs)
+    BodyGen.SetMorph(Player, true, "Waist", NONE, PlayerBody.buttWaist)
+    BodyGen.SetMorph(Player, true, "Back", NONE, PlayerBody.buttBack)
+    BodyGen.SetMorph(Player, true, "BigButt", NONE, PlayerBody.buttBig)
+    BodyGen.SetMorph(Player, true, "ChubbyLegs", NONE, PlayerBody.buttCLegs)
+    BodyGen.SetMorph(Player, true, "ChubbyWaist", NONE, PlayerBody.buttCWaist)
+    BodyGen.SetMorph(Player, true, "AppleCheeks", NONE, PlayerBody.buttApple)
+    BodyGen.SetMorph(Player, true, "RoundAss", NONE, PlayerBody.buttRound)
+
+    Debug.Trace("MorphBody: " + BodyGen.GetMorph(Player, true, "Giant Belly (coldsteelj)", NONE))
+    Debug.Trace("UpdateMorphs")
+    BodyGen.UpdateMorphs(Player)
 endfunction
 
 ; Metabolism

@@ -38,7 +38,7 @@ Frankly, I think most of this stuff should be scoped to companion mods. A great 
 - [x] Belly limit. Overeating damages you, levels up capacity
 - [ ] Fatness grants damage reduction
 - [ ] Fatness makes you slower
-- [ ] Metabolizing fat grants temporary health regeneration
+- [x] Metabolizing fat grants temporary health regeneration
 - [x] Weight Gain: Distribute calories to breasts
 - [ ] Weight Gain: Distribute calories to butt
 - [ ] Strength: More damage from stomach acid. More muscle growth.
