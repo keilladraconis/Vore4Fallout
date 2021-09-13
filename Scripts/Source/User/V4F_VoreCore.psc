@@ -1,5 +1,8 @@
 Scriptname V4F_VoreCore extends Quest
 
+; Properties populated through CK
+V4F_Endurance Property EndurancePerk Auto Const Mandatory
+
 struct Vore
     float food = 0.0
     float prey = 0.0
@@ -65,6 +68,8 @@ ActorValue AgilityAV
 ActorValue LuckAV
 ActorValue HealthAV
 
+CustomEvent EnduranceUpdate
+
 ; Called when the quest initializes
 Event OnInit()
     Setup()
@@ -88,6 +93,9 @@ Function Setup()
     WarpSpeedMode(1.0)
     Self.RegisterForPlayerSleep()
     StartTimer(60.0 / timeWarp, 1)
+
+    ; Prep other scripts
+    EndurancePerk.Setup()
 EndFunction
 
 function WarpSpeedMode(float warp)
@@ -134,13 +142,11 @@ function AddFood(float amount, activemagiceffect foodEffect)
     float maxBelly = BellyMaxByAV()
     If PlayerVore.food > maxBelly
         float excess = PlayerVore.food - maxBelly
-        PlayerVore.food = maxBelly
-        ; EndurancePerkProgress += excess * EndurancePerkInc
-        ; Debug.Trace("Overeat: " + excess + " EndurancePerkProgress: " + Data.EndurancePerkProgress)
         If foodeffect != NONE
             foodeffect.Dispel()
         EndIf
         Player.DamageValue(HealthAV, Math.Min(50, excess * 1000)) ; In case of warp, don't just die instantly.
+        SendCustomEvent("EnduranceUpdate", new Var[0])
     EndIf
     UpdateBody()
     MorphBody()
