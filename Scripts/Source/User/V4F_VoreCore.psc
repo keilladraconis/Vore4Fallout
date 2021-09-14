@@ -69,6 +69,7 @@ ActorValue LuckAV
 ActorValue HealthAV
 
 CustomEvent EnduranceUpdate
+CustomEvent SleepUpdate
 
 ; Called when the quest initializes
 Event OnInit()
@@ -96,6 +97,8 @@ Function Setup()
 
     ; Prep other scripts
     EndurancePerk.Setup()
+    ; Debug.Trace(V4F_EndurancePerk2)
+    ; Player.AddPerk(V4F_EndurancePerk2)
 EndFunction
 
 function WarpSpeedMode(float warp)
@@ -120,11 +123,14 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
     float timeDelta = (Utility.GetCurrentGameTime() - SleepStart) / (1.0 / 24.0) * 60 * 60
     Metabolize(metabolicRate * Player.GetValue(AgilityAV) * timeDelta * calorieWarp) ; Represents the base metabolic rate of the player. Burn calories.
     UpdateBody()
+    Var[] args = new Var[1]
+    args[0] = timeDelta
+    SendCustomEvent("SleepUpdate", args)
 EndEvent
 
 Event OnTimer(int timer)
     Debug.Trace("OnTimer" + timer)
-    ; Metabolize(metabolicRate * 60 * Player.GetValue(AgilityAV) * calorieWarp) ; Represents the base metabolic rate of the player. Burn calories.
+    Metabolize(metabolicRate * 60 * Player.GetValue(AgilityAV) * calorieWarp) ; Represents the base metabolic rate of the player. Burn calories.
     UpdateBody()
     MorphBody()
     StartTimer(60.0 / timeWarp, 1)
@@ -154,7 +160,7 @@ endfunction
 
 float Function BellyMaxByAV()
     ; An hockey-stick function targeting 6.0 at Endurance 10
-    return 0.06 * Math.pow(Player.GetValue(EnduranceAV) / 2.8, 3)
+    return 0.05 + (0.06 * Math.pow(Player.GetValue(EnduranceAV) / 2.8, 3))
 EndFunction
 
 function Digest(float food, float prey, float calories)
@@ -381,3 +387,4 @@ EndFunction
 float Function ButtMaxByAV()
     return Player.GetValue(CharismaAV) / 10.0
 EndFunction
+Perk Property V4F_EndurancePerk2 Auto Const
