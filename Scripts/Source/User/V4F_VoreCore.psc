@@ -7,6 +7,11 @@ Perk Property V4F_Intelligence2 Auto Const
 Perk Property V4F_Intelligence3 Auto Const
 Perk Property V4F_Intelligence4 Auto Const
 Perk Property V4F_Intelligence5 Auto Const
+Perk Property V4F_Charisma1 Auto Const
+Perk Property V4F_Charisma2 Auto Const
+Perk Property V4F_Charisma3 Auto Const
+Perk Property V4F_Charisma4 Auto Const
+Perk Property V4F_Charisma5 Auto Const
 
 struct Vore
     float food = 0.0
@@ -49,9 +54,13 @@ float sleepStart
 float metabolicRate = -2.08
 float digestHealthRestore = 0.001 ; 1 hp per 1000 calories 
 
+float IntelligencePerkProgress = 0.0
 float IntelligencePerkRate
-float IntelligencePerkProgress
 float IntelligencePerkDecay
+
+float CharismaPerkProgress = 0.0
+float CharismaPerkRate
+float CharismaPerkDecay
 
 Body pPlayerBody
 Body Property PlayerBody
@@ -106,6 +115,7 @@ Function Setup()
 
     ; Prep other scripts
     IntelligencePerkSetup()
+    CharismaPerkSetup()
     EndurancePerk.Setup()
 EndFunction
 
@@ -132,6 +142,7 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
     Metabolize(metabolicRate * Player.GetValue(AgilityAV) * timeDelta * calorieWarp) ; Represents the base metabolic rate of the player. Burn calories.
     UpdateBody()
     IntelligencePerkDecay(timeDelta)
+    CharismaPerkDecay(timeDelta)
 EndEvent
 
 Event OnTimer(int timer)
@@ -143,6 +154,9 @@ Event OnTimer(int timer)
         StartTimer(60.0 / timeWarp, 1)
     elseif timer == 30
         IntelligencePerkDecay(1.0)
+        StartTimer(3600.0, 30)
+    elseif timer == 40
+        CharismaPerkDecay(1.0)
         StartTimer(3600.0, 30)
     endif
 endevent
@@ -401,7 +415,6 @@ EndFunction
 
 ;; Handling Intelligence Perk "Sweet Foods"
 function IntelligencePerkSetup()
-    IntelligencePerkProgress = 0
     IntelligencePerkRate = 0.025
     IntelligencePerkDecay = 0.125
     StartTimer(3600.0, 30)
@@ -420,28 +433,69 @@ function ApplyIntelligencePerks()
     Player.RemovePerk(V4F_Intelligence5)
     if IntelligencePerkProgress >= 1.0
         Player.AddPerk(V4F_Intelligence1)
-        Debug.Trace("Added Perk 1" + V4F_Intelligence1)
     endif
     if IntelligencePerkProgress >= 2.0
         Player.AddPerk(V4F_Intelligence2)
-        Debug.Trace("Added Perk 2" + V4F_Intelligence2)
     endif
     if IntelligencePerkProgress >= 3.0
         Player.AddPerk(V4F_Intelligence3)
-        Debug.Trace("Added Perk 3" + V4F_Intelligence3)
     endif
     if IntelligencePerkProgress >= 4.0
         Player.AddPerk(V4F_Intelligence4)
-        Debug.Trace("Added Perk 4" + V4F_Intelligence4)
     endif
     if IntelligencePerkProgress >= 5.0
         Player.AddPerk(V4F_Intelligence5)
-        Debug.Trace("Added Perk 5" + V4F_Intelligence5)
     endif
     StartTimer(3600.0, 30)
 endfunction
 
 function IntelligencePerkDecay(float time)
-    IntelligencePerkProgress -= time * IntelligencePerkDecay
-    ApplyIntelligencePerks()
+    if IntelligencePerkProgress > 0.0
+        IntelligencePerkProgress -= time * IntelligencePerkDecay
+        if IntelligencePerkProgress < 0.0
+            IntelligencePerkProgress = 0.0
+        endif
+        ApplyIntelligencePerks()
+    endif
+endfunction
+
+;; Handling Charisma Perk "Fatty Foods"
+function CharismaPerkSetup()
+    CharismaPerkRate = 0.025
+    CharismaPerkDecay = 0.125
+    StartTimer(3600.0, 40)
+endfunction
+
+function FattyFood()
+    CharismaPerkProgress += CharismaPerkRate
+    ApplyCharismaPerks()
+endfunction
+
+function ApplyCharismaPerks()
+    Player.RemovePerk(V4F_Charisma1)
+    Player.RemovePerk(V4F_Charisma2)
+    Player.RemovePerk(V4F_Charisma3)
+    Player.RemovePerk(V4F_Charisma4)
+    Player.RemovePerk(V4F_Charisma5)
+    if CharismaPerkProgress >= 1.0
+        Player.AddPerk(V4F_Charisma1)
+    endif
+    if CharismaPerkProgress >= 2.0
+        Player.AddPerk(V4F_Charisma2)
+    endif
+    if CharismaPerkProgress >= 3.0
+        Player.AddPerk(V4F_Charisma3)
+    endif
+    if CharismaPerkProgress >= 4.0
+        Player.AddPerk(V4F_Charisma4)
+    endif
+    if CharismaPerkProgress >= 5.0
+        Player.AddPerk(V4F_Charisma5)
+    endif
+    StartTimer(3600.0, 40)
+endfunction
+
+function CharismaPerkDecay(float time)
+    CharismaPerkProgress -= time * CharismaPerkDecay
+    ApplyCharismaPerks()
 endfunction
