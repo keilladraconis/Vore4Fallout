@@ -402,7 +402,7 @@ EndFunction
 ;; Handling Intelligence Perk "Sweet Foods"
 function IntelligencePerkSetup()
     IntelligencePerkProgress = 0
-    IntelligencePerkRate = 1.025
+    IntelligencePerkRate = 0.025
     IntelligencePerkDecay = 0.125
     StartTimer(3600.0, 30)
 endfunction
