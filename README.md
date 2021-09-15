@@ -27,8 +27,8 @@ Frankly, I think most of this stuff should be scoped to companion mods. A great 
 * Sound Effects
 
 ## Sweet Features
-* Smooth morphing between vore states.
 * Realistic metabolism
+* Complex morphing
 
 ## Feature Map
 - [x] Belly bloating from food.
