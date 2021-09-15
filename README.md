@@ -40,7 +40,7 @@ Frankly, I think most of this stuff should be scoped to companion mods. A great 
 - [ ] Fatness makes you slower
 - [x] Metabolizing fat grants temporary health regeneration
 - [x] Weight Gain: Distribute calories to breasts
-- [ ] Weight Gain: Distribute calories to butt
+- [x] Weight Gain: Distribute calories to butt
 - [ ] Strength: More damage from stomach acid. More muscle growth.
 - [ ] Perception: Digest faster and have higher regeneration
 - [x] Endurance: More belly capacity
@@ -48,11 +48,11 @@ Frankly, I think most of this stuff should be scoped to companion mods. A great 
 - [x] Intelligence: Bigger breasts
 - [ ] Agility: Move faster when fat. Higher metabolism burns fat faster.
 - [ ] Luck: Find more food in containers
-- [ ] Strength Perk: Eating meat (and voring) grants a boon to strength
-- [ ] Perception Perk: Consistent eating grants a boon to perception.
-- [ ] Endurance Perk: Overeating grants a boon to Endurance.
-- [ ] Charisma Perk: Eating fatty food grants a boon to Charisma.
-- [ ] Intelligence Perk: Eating sugary food grants a boon to Intelligence.
+- [x] Strength Perk: Eating meat (and voring) grants a boon to strength
+- [ ] Perception Perk: Healthy eating grants a boon to perception.
+- [x] Endurance Perk: Overeating grants a boon to Endurance.
+- [x] Charisma Perk: Eating fatty food grants a boon to Charisma.
+- [x] Intelligence Perk: Eating sugary food grants a boon to Intelligence.
 - [ ] Agility Perk: Running while fat grants a boon to Agility.
 - [ ] Luck Perk: Eating a variety of foods grants a boon to Luck.
 - [ ] Vore: A 'devour' weapon allows voring NPCs.
