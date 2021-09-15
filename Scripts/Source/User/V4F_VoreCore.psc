@@ -12,6 +12,11 @@ Perk Property V4F_Charisma2 Auto Const
 Perk Property V4F_Charisma3 Auto Const
 Perk Property V4F_Charisma4 Auto Const
 Perk Property V4F_Charisma5 Auto Const
+Perk Property V4F_Strength1 Auto Const
+Perk Property V4F_Strength2 Auto Const
+Perk Property V4F_Strength3 Auto Const
+Perk Property V4F_Strength4 Auto Const
+Perk Property V4F_Strength5 Auto Const
 
 struct Vore
     float food = 0.0
@@ -61,6 +66,10 @@ float IntelligencePerkDecay
 float CharismaPerkProgress = 0.0
 float CharismaPerkRate
 float CharismaPerkDecay
+
+float StrengthPerkProgress = 0.0
+float StrengthPerkRate
+float StrengthPerkDecay
 
 Body pPlayerBody
 Body Property PlayerBody
@@ -117,6 +126,7 @@ Function Setup()
     IntelligencePerkSetup()
     CharismaPerkSetup()
     EndurancePerk.Setup()
+    StrengthPerkSetup()
 EndFunction
 
 function WarpSpeedMode(float warp)
@@ -157,7 +167,10 @@ Event OnTimer(int timer)
         StartTimer(3600.0, 30)
     elseif timer == 40
         CharismaPerkDecay(1.0)
-        StartTimer(3600.0, 30)
+        StartTimer(3600.0, 40)
+    elseif timer == 50
+        StrengthPerkDecay(1.0)
+        StartTimer(3600.0, 50)
     endif
 endevent
 
@@ -498,4 +511,45 @@ endfunction
 function CharismaPerkDecay(float time)
     CharismaPerkProgress -= time * CharismaPerkDecay
     ApplyCharismaPerks()
+endfunction
+
+;; Handling Strength Perk "Protein Foods"
+function StrengthPerkSetup()
+    StrengthPerkRate = 0.025
+    StrengthPerkDecay = 0.125
+    StartTimer(3600.0, 40)
+endfunction
+
+function ProteinFood()
+    StrengthPerkProgress += StrengthPerkRate
+    ApplyStrengthPerks()
+endfunction
+
+function ApplyStrengthPerks()
+    Player.RemovePerk(V4F_Strength1)
+    Player.RemovePerk(V4F_Strength2)
+    Player.RemovePerk(V4F_Strength3)
+    Player.RemovePerk(V4F_Strength4)
+    Player.RemovePerk(V4F_Strength5)
+    if StrengthPerkProgress >= 1.0
+        Player.AddPerk(V4F_Strength1)
+    endif
+    if StrengthPerkProgress >= 2.0
+        Player.AddPerk(V4F_Strength2)
+    endif
+    if StrengthPerkProgress >= 3.0
+        Player.AddPerk(V4F_Strength3)
+    endif
+    if StrengthPerkProgress >= 4.0
+        Player.AddPerk(V4F_Strength4)
+    endif
+    if StrengthPerkProgress >= 5.0
+        Player.AddPerk(V4F_Strength5)
+    endif
+    StartTimer(3600.0, 40)
+endfunction
+
+function StrengthPerkDecay(float time)
+    StrengthPerkProgress -= time * StrengthPerkDecay
+    ApplyStrengthPerks()
 endfunction
