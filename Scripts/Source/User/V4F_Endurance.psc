@@ -49,23 +49,18 @@ function ApplyPerks()
     Player.RemovePerk(V4F_Endurance5)
     if EndurancePerkProgress >= 1.0
         Player.AddPerk(V4F_Endurance1)
-        Debug.Trace("Added Perk 1" + V4F_Endurance1)
     endif
     if EndurancePerkProgress >= 2.0
         Player.AddPerk(V4F_Endurance2)
-        Debug.Trace("Added Perk 2" + V4F_Endurance2)
     endif
     if EndurancePerkProgress >= 3.0
         Player.AddPerk(V4F_Endurance3)
-        Debug.Trace("Added Perk 3" + V4F_Endurance3)
     endif
     if EndurancePerkProgress >= 4.0
         Player.AddPerk(V4F_Endurance4)
-        Debug.Trace("Added Perk 4" + V4F_Endurance4)
     endif
     if EndurancePerkProgress >= 5.0
         Player.AddPerk(V4F_Endurance5)
-        Debug.Trace("Added Perk 5" + V4F_Endurance5)
     endif
     StartTimer(3600.0, 20)
 endfunction

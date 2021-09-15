@@ -2,6 +2,7 @@ Scriptname V4F_VoreCore extends Quest
 
 ; Properties populated through CK
 V4F_Endurance Property EndurancePerk Auto Const Mandatory
+V4F_SweetFoods Property SweetFoods Auto Const Mandatory
 
 struct Vore
     float food = 0.0
@@ -97,8 +98,7 @@ Function Setup()
 
     ; Prep other scripts
     EndurancePerk.Setup()
-    ; Debug.Trace(V4F_EndurancePerk2)
-    ; Player.AddPerk(V4F_EndurancePerk2)
+    SweetFoods.Setup()
 EndFunction
 
 function WarpSpeedMode(float warp)
@@ -387,4 +387,3 @@ EndFunction
 float Function ButtMaxByAV()
     return Player.GetValue(CharismaAV) / 10.0
 EndFunction
-Perk Property V4F_EndurancePerk2 Auto Const
