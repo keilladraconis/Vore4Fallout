@@ -1,8 +1,12 @@
 Scriptname V4F_VoreCore extends Quest
 
-; Properties populated through CK
+; Properties populated through CK HELLO
 V4F_Endurance Property EndurancePerk Auto Const Mandatory
-V4F_SweetFoods Property SweetFoods Auto Const Mandatory
+Perk Property V4F_Intelligence1 Auto Const
+Perk Property V4F_Intelligence2 Auto Const
+Perk Property V4F_Intelligence3 Auto Const
+Perk Property V4F_Intelligence4 Auto Const
+Perk Property V4F_Intelligence5 Auto Const
 
 struct Vore
     float food = 0.0
@@ -44,6 +48,10 @@ float sleepStart
 
 float metabolicRate = -2.08
 float digestHealthRestore = 0.001 ; 1 hp per 1000 calories 
+
+float IntelligencePerkRate
+float IntelligencePerkProgress
+float IntelligencePerkDecay
 
 Body pPlayerBody
 Body Property PlayerBody
@@ -97,8 +105,8 @@ Function Setup()
     StartTimer(60.0 / timeWarp, 1)
 
     ; Prep other scripts
+    IntelligencePerkSetup()
     EndurancePerk.Setup()
-    SweetFoods.Setup()
 EndFunction
 
 function WarpSpeedMode(float warp)
@@ -123,17 +131,20 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
     float timeDelta = (Utility.GetCurrentGameTime() - SleepStart) / (1.0 / 24.0) * 60 * 60
     Metabolize(metabolicRate * Player.GetValue(AgilityAV) * timeDelta * calorieWarp) ; Represents the base metabolic rate of the player. Burn calories.
     UpdateBody()
-    Var[] args = new Var[1]
-    args[0] = timeDelta
-    SendCustomEvent("SleepUpdate", args)
+    IntelligencePerkDecay(timeDelta)
 EndEvent
 
 Event OnTimer(int timer)
     Debug.Trace("OnTimer" + timer)
-    Metabolize(metabolicRate * 60 * Player.GetValue(AgilityAV) * calorieWarp) ; Represents the base metabolic rate of the player. Burn calories.
-    UpdateBody()
-    MorphBody()
-    StartTimer(60.0 / timeWarp, 1)
+    if timer == 1
+        Metabolize(metabolicRate * 60 * Player.GetValue(AgilityAV) * calorieWarp) ; Represents the base metabolic rate of the player. Burn calories.
+        UpdateBody()
+        MorphBody()
+        StartTimer(60.0 / timeWarp, 1)
+    elseif timer == 30
+        IntelligencePerkDecay(1.0)
+        StartTimer(3600.0, 30)
+    endif
 endevent
 
 ; ======
@@ -387,3 +398,50 @@ EndFunction
 float Function ButtMaxByAV()
     return Player.GetValue(CharismaAV) / 10.0
 EndFunction
+
+;; Handling Intelligence Perk "Sweet Foods"
+function IntelligencePerkSetup()
+    IntelligencePerkProgress = 0
+    IntelligencePerkRate = 1.025
+    IntelligencePerkDecay = 0.125
+    StartTimer(3600.0, 30)
+endfunction
+
+function SweetFood()
+    IntelligencePerkProgress += IntelligencePerkRate
+    ApplyIntelligencePerks()
+endfunction
+
+function ApplyIntelligencePerks()
+    Player.RemovePerk(V4F_Intelligence1)
+    Player.RemovePerk(V4F_Intelligence2)
+    Player.RemovePerk(V4F_Intelligence3)
+    Player.RemovePerk(V4F_Intelligence4)
+    Player.RemovePerk(V4F_Intelligence5)
+    if IntelligencePerkProgress >= 1.0
+        Player.AddPerk(V4F_Intelligence1)
+        Debug.Trace("Added Perk 1" + V4F_Intelligence1)
+    endif
+    if IntelligencePerkProgress >= 2.0
+        Player.AddPerk(V4F_Intelligence2)
+        Debug.Trace("Added Perk 2" + V4F_Intelligence2)
+    endif
+    if IntelligencePerkProgress >= 3.0
+        Player.AddPerk(V4F_Intelligence3)
+        Debug.Trace("Added Perk 3" + V4F_Intelligence3)
+    endif
+    if IntelligencePerkProgress >= 4.0
+        Player.AddPerk(V4F_Intelligence4)
+        Debug.Trace("Added Perk 4" + V4F_Intelligence4)
+    endif
+    if IntelligencePerkProgress >= 5.0
+        Player.AddPerk(V4F_Intelligence5)
+        Debug.Trace("Added Perk 5" + V4F_Intelligence5)
+    endif
+    StartTimer(3600.0, 30)
+endfunction
+
+function IntelligencePerkDecay(float time)
+    IntelligencePerkProgress -= time * IntelligencePerkDecay
+    ApplyIntelligencePerks()
+endfunction
