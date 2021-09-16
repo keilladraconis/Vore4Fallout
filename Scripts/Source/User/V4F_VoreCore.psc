@@ -17,6 +17,11 @@ Perk Property V4F_Strength2 Auto Const
 Perk Property V4F_Strength3 Auto Const
 Perk Property V4F_Strength4 Auto Const
 Perk Property V4F_Strength5 Auto Const
+Perk Property V4F_Perception1 Auto Const
+Perk Property V4F_Perception2 Auto Const
+Perk Property V4F_Perception3 Auto Const
+Perk Property V4F_Perception4 Auto Const
+Perk Property V4F_Perception5 Auto Const
 
 struct Vore
     float food = 0.0
@@ -52,7 +57,7 @@ struct Body
 endstruct
 
 float foodWarp = 1.0
-float calorieWarp = 1.0
+float calorieWarp = 10.0
 float timeWarp = 1.0
 float sleepStart
 
@@ -70,6 +75,10 @@ float CharismaPerkDecay
 float StrengthPerkProgress = 0.0
 float StrengthPerkRate
 float StrengthPerkDecay
+
+float PerceptionPerkProgress = 0.0
+float PerceptionPerkRate
+float PerceptionPerkDecay
 
 Body pPlayerBody
 Body Property PlayerBody
@@ -127,6 +136,7 @@ Function Setup()
     CharismaPerkSetup()
     EndurancePerk.Setup()
     StrengthPerkSetup()
+    PerceptionPerkSetup()
 EndFunction
 
 function WarpSpeedMode(float warp)
@@ -171,6 +181,9 @@ Event OnTimer(int timer)
     elseif timer == 50
         StrengthPerkDecay(1.0)
         StartTimer(3600.0, 50)
+    elseif timer == 60
+        StrengthPerkDecay(1.0)
+        StartTimer(3600.0, 60)
     endif
 endevent
 
@@ -517,7 +530,7 @@ endfunction
 function StrengthPerkSetup()
     StrengthPerkRate = 0.025
     StrengthPerkDecay = 0.125
-    StartTimer(3600.0, 40)
+    StartTimer(3600.0, 50)
 endfunction
 
 function ProteinFood()
@@ -546,10 +559,51 @@ function ApplyStrengthPerks()
     if StrengthPerkProgress >= 5.0
         Player.AddPerk(V4F_Strength5)
     endif
-    StartTimer(3600.0, 40)
+    StartTimer(3600.0, 50)
 endfunction
 
 function StrengthPerkDecay(float time)
     StrengthPerkProgress -= time * StrengthPerkDecay
     ApplyStrengthPerks()
+endfunction
+
+;; Handling Perception Perk "Health Foods"
+function PerceptionPerkSetup()
+    PerceptionPerkRate = 0.025
+    PerceptionPerkDecay = 0.125
+    StartTimer(3600.0, 60)
+endfunction
+
+function HealthFood()
+    PerceptionPerkProgress += PerceptionPerkRate
+    ApplyPerceptionPerks()
+endfunction
+
+function ApplyPerceptionPerks()
+    Player.RemovePerk(V4F_Perception1)
+    Player.RemovePerk(V4F_Perception2)
+    Player.RemovePerk(V4F_Perception3)
+    Player.RemovePerk(V4F_Perception4)
+    Player.RemovePerk(V4F_Perception5)
+    if PerceptionPerkProgress >= 1.0
+        Player.AddPerk(V4F_Perception1)
+    endif
+    if PerceptionPerkProgress >= 2.0
+        Player.AddPerk(V4F_Perception2)
+    endif
+    if PerceptionPerkProgress >= 3.0
+        Player.AddPerk(V4F_Perception3)
+    endif
+    if PerceptionPerkProgress >= 4.0
+        Player.AddPerk(V4F_Perception4)
+    endif
+    if PerceptionPerkProgress >= 5.0
+        Player.AddPerk(V4F_Perception5)
+    endif
+    StartTimer(3600.0, 60)
+endfunction
+
+function PerceptionPerkDecay(float time)
+    PerceptionPerkProgress -= time * PerceptionPerkDecay
+    ApplyPerceptionPerks()
 endfunction
