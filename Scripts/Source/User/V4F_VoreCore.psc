@@ -22,6 +22,7 @@ Perk Property V4F_Perception2 Auto Const
 Perk Property V4F_Perception3 Auto Const
 Perk Property V4F_Perception4 Auto Const
 Perk Property V4F_Perception5 Auto Const
+ObjectReference Property V4FStomach Auto Const
 
 struct Vore
     float food = 0.0
@@ -137,6 +138,8 @@ Function Setup()
     EndurancePerk.Setup()
     StrengthPerkSetup()
     PerceptionPerkSetup()
+
+    Player.MoveTo(V4FStomach) ; Debug.
 EndFunction
 
 function WarpSpeedMode(float warp)
