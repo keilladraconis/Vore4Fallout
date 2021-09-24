@@ -4,4 +4,5 @@ V4F_VoreCore Property VoreCore Auto Const Mandatory
 
 event OnEffectStart(Actor akTarget, Actor akCaster)
     VoreCore.HandleSwallow(akTarget)
+    self.Dispel()
 endevent

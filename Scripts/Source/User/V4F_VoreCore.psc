@@ -64,8 +64,10 @@ float calorieWarp = 10.0
 float timeWarp = 1.0
 float sleepStart
 
+float digestionRate = 0.000017 ; Approximately 50% of the vore prey belly is digested per 8 hours. This is the per-second rate.
 float metabolicRate = -2.08
 float digestHealthRestore = 0.001 ; 1 hp per 1000 calories 
+float calorieDensity = 144000.0 ; If the full belly is 1.25 feet in radius, 8 cubic feet, or 60 gallons, then at 2400 calories per gallon a full belly of milk would be 144000 calories.
 
 float IntelligencePerkProgress = 0.0
 float IntelligencePerkRate
@@ -110,6 +112,9 @@ ActorValue HealthAV
 CustomEvent EnduranceUpdate
 CustomEvent SleepUpdate
 
+Actor[] BellyContent
+bool isProcessingVore
+
 ; Called when the quest initializes
 Event OnInit()
     Setup()
@@ -130,8 +135,11 @@ Function Setup()
     HealthAV = Game.GetHealthAV()
     metabolicRate = -2.08 ; Calories burned per 1 second.
     digestHealthRestore = 0.001
+    digestionRate = 0.000017
+    calorieDensity = 144000.0
     WarpSpeedMode(1.0)
     Self.RegisterForPlayerSleep()
+    ; Self.RegisterForPlayerWait()
     StartTimer(60.0 / timeWarp, 1)
 
     ; Give swallow weapon
@@ -166,19 +174,33 @@ EndEvent
 
 Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
     ; Time is reported as a floating point number where 1 is a whole day. 1 hour is 1/24 expressed as a decimal. (1.0 / 24.0) * 60 * 60 = 150
-    float timeDelta = (Utility.GetCurrentGameTime() - SleepStart) / (1.0 / 24.0) * 60 * 60
-    Metabolize(metabolicRate * Player.GetValue(AgilityAV) * timeDelta * calorieWarp) ; Represents the base metabolic rate of the player. Burn calories.
-    UpdateBody()
-    IntelligencePerkDecay(timeDelta)
-    CharismaPerkDecay(timeDelta)
+    float timeDelta = (Utility.GetCurrentGameTime() - sleepStart) / (1.0 / 24.0) * 60 * 60
+    float calories = Digest(timeDelta * Player.GetValue(StrengthAV) * timeWarp)
+    if isProcessingVore
+        ProcessVore(timeDelta / 10.0)
+    else
+        Metabolize(calories + metabolicRate * timeDelta * Player.GetValue(AgilityAV) * calorieWarp) ; Represents the base metabolic rate of the player. Burn calories.      
+        UpdateBody()
+        MorphBody()
+        IntelligencePerkDecay(timeDelta)
+        CharismaPerkDecay(timeDelta)
+        StrengthPerkDecay(timeDelta)
+        PerceptionPerkDecay(timeDelta)
+    endif
 EndEvent
 
 Event OnTimer(int timer)
     Debug.Trace("OnTimer" + timer)
     if timer == 1
-        Metabolize(metabolicRate * 60 * Player.GetValue(AgilityAV) * calorieWarp) ; Represents the base metabolic rate of the player. Burn calories.
-        UpdateBody()
-        MorphBody()
+        if !isProcessingVore
+            Debug.Trace("Timer Pre-Digest")
+            float calories = Digest(60.0 * Player.GetValue(StrengthAV) * timeWarp)
+            
+            Debug.Trace("Timer Post-Digest")
+            Metabolize(calories + metabolicRate * 60 * Player.GetValue(AgilityAV) * calorieWarp) ; Represents the base metabolic rate of the player. Burn calories.
+            UpdateBody()
+            MorphBody()
+        endif
         StartTimer(60.0 / timeWarp, 1)
     elseif timer == 30
         IntelligencePerkDecay(1.0)
@@ -190,8 +212,10 @@ Event OnTimer(int timer)
         StrengthPerkDecay(1.0)
         StartTimer(3600.0, 50)
     elseif timer == 60
-        StrengthPerkDecay(1.0)
+        PerceptionPerkDecay(1.0)
         StartTimer(3600.0, 60)
+    elseif timer == 70
+        ProcessVore(10.0)
     endif
 endevent
 
@@ -205,8 +229,8 @@ EndFunction
 function AddFood(float amount, activemagiceffect foodEffect)
     PlayerVore.food += amount * foodWarp
     float maxBelly = BellyMaxByAV()
-    If PlayerVore.food > maxBelly
-        float excess = PlayerVore.food - maxBelly
+    If BellyTotal() > maxBelly
+        float excess = BellyTotal() - maxBelly
         If foodeffect != NONE
             foodeffect.Dispel()
         EndIf
@@ -217,23 +241,81 @@ function AddFood(float amount, activemagiceffect foodEffect)
     MorphBody()
 endfunction
 
+bool function AddVore(float amount)
+    if PlayerVore.prey < 0.5
+        amount = amount / 2.0
+    elseif PlayerVore.prey >= 0.5
+        amount = amount / 10.0
+    endif
+    float maxBelly = BellyMaxByAV()
+    Debug.Trace("Belly Max is: " + maxBelly)
+    float newPrey = PlayerVore.prey + amount
+    if (BellyTotal() + amount * 2) > maxBelly
+        float excess = (BellyTotal() + amount * 2) - maxBelly
+        Player.DamageValue(HealthAV, Math.Min(50, excess * 1000))
+        SendCustomEvent("EnduranceUpdate", new Var[0])
+        return false
+    else
+        PlayerVore.prey += amount
+        ProteinFood()
+        UpdateBody()
+        MorphBody()
+        return true
+    endif
+endfunction
+
+float Function BellyTotal()
+    return PlayerVore.prey * 2 + PlayerVore.food
+endfunction
+
 float Function BellyMaxByAV()
     ; An hockey-stick function targeting 6.0 at Endurance 10
     return 0.05 + (0.06 * Math.pow(Player.GetValue(EnduranceAV) / 2.8, 3))
 EndFunction
 
-function Digest(float food, float prey, float calories)
-    Debug.Trace("Digest food:" + food + " prey:" + prey + "cal:" + calories)
-    PlayerVore.food -= food * foodWarp
-    if PlayerVore.food < 0.0
-        PlayerVore.food = 0.0
+float function Digest(float digestAmount)
+    float digestActual = digestAmount * digestionRate
+    float digestToFood = 0.0
+    float digestCalories = 0.0
+    Debug.Trace("Digesting " + digestActual)
+
+    if PlayerVore.prey >= 0.5
+        float digestPlus = PlayerVore.prey - 0.5 - digestActual
+        if digestPlus >= 0.0
+            PlayerVore.prey -= digestActual
+            digestToFood += digestActual * 10.0
+            digestActual = 0.0
+        else
+            PlayerVore.prey -= digestActual + digestPlus
+            digestToFood += (digestActual + digestPlus) * 10.0
+            digestActual = Math.abs(digestPlus)
+        endif
     endif
-    PlayerVore.prey -= prey
-    if PlayerVore.prey < 0.0
-        PlayerVore.prey = 0.0
+
+    if digestActual > 0.0 && PlayerVore.prey < 0.5 && PlayerVore.prey > 0.0
+        PlayerVore.prey -= digestActual
+        if PlayerVore.prey > 0.0
+            digestToFood += digestActual * 2.0
+            digestActual = 0.0
+        else
+            digestToFood += (digestActual + PlayerVore.prey) * 2.0
+            digestActual = Math.abs(PlayerVore.prey)
+            PlayerVore.prey = 0.0
+        endif
     endif
-    Metabolize(calories * calorieWarp)
-    UpdateBody()
+
+    if digestActual > 0.0 && PlayerVore.prey <= 0.0 && PlayerVore.food > 0.0
+        PlayerVore.food -= digestActual
+        if PlayerVore.food > 0.0
+            digestCalories += digestActual * calorieDensity
+        else
+            digestCalories += (digestActual + PlayerVore.food) * calorieDensity
+            PlayerVore.food = 0.0
+        endif
+    endif
+
+    PlayerVore.food += digestToFood
+    return digestCalories
 endfunction
  
 ; =======
@@ -242,6 +324,7 @@ endfunction
 function UpdateBody()
     Debug.Trace("UpdateBody Vore:" + PlayerVore)
     PlayerBody.bbw = PlayerVore.fat
+    PlayerBody.vorePreyBelly = PlayerVore.prey
     PlayerBody.giantBellyUp = Math.Max(0, PlayerVore.prey + (PlayerVore.food / 2) - 14000) * 6 
     if PlayerVore.food >= 0.0 && PlayerVore.food <= 0.1
         PlayerBody.bigBelly         = PlayerVore.food * 10.0
@@ -448,6 +531,7 @@ float Function ButtMaxByAV()
 EndFunction
 
 ;; Handling Intelligence Perk "Sweet Foods"
+;; TimerID = 30
 function IntelligencePerkSetup()
     IntelligencePerkRate = 0.025
     IntelligencePerkDecay = 0.125
@@ -494,6 +578,7 @@ function IntelligencePerkDecay(float time)
 endfunction
 
 ;; Handling Charisma Perk "Fatty Foods"
+;; TimerID = 40
 function CharismaPerkSetup()
     CharismaPerkRate = 0.025
     CharismaPerkDecay = 0.125
@@ -535,6 +620,7 @@ function CharismaPerkDecay(float time)
 endfunction
 
 ;; Handling Strength Perk "Protein Foods"
+;; TimerID = 50
 function StrengthPerkSetup()
     StrengthPerkRate = 0.025
     StrengthPerkDecay = 0.125
@@ -576,6 +662,7 @@ function StrengthPerkDecay(float time)
 endfunction
 
 ;; Handling Perception Perk "Health Foods"
+;; TimerID = 60
 function PerceptionPerkSetup()
     PerceptionPerkRate = 0.025
     PerceptionPerkDecay = 0.125
@@ -631,5 +718,56 @@ function EnsureSwallowItem()
 endfunction
 
 function HandleSwallow(Actor prey)
-    prey.MoveTo(V4FStomach)
+    Debug.Notification("Handling Swallow")
+    if BellyContent == NONE
+        BellyContent = new Actor[0]
+    endif
+
+    if AddVore(1.0)
+        Player.SetRelationshipRank(prey, -4)
+        prey.MoveTo(V4FStomach)
+        BellyContent.Add(prey)
+        if !isProcessingVore
+            isProcessingVore = true
+            StartTimer(10.0, 70)
+        endif
+    else
+        Debug.Notification("You have no room in your stomach!")
+    endif
+endfunction
+
+; TimerID 70
+function ProcessVore(float time = 10.0)
+    if BellyContent.length == 0
+        isProcessingVore = false
+        Debug.Notification("Belly Empty!")
+        return
+    endif
+    Debug.Notification("Processing Vore")
+    int i = 0
+    Actor[] deadList = new Actor[0]
+    ; Acid damage is equal to player strength divided by the number of prey
+    float stomachAcidDamage = (time / 10.0) * (Player.GetValue(StrengthAV) * 2.0) / BellyContent.Length
+    Debug.Trace("AcidDamge: " + stomachAcidDamage)
+    while i < BellyContent.Length
+        BellyContent[i].DamageValue(HealthAV, stomachAcidDamage)
+        if BellyContent[i].IsDead()
+            Debug.Notification("Digested one")
+            deadList.Add(BellyContent[i])
+        endif
+        i += 1
+    endwhile
+
+    i = 0
+    while i < deadList.Length
+        BellyContent.Remove(BellyContent.Find(deadList[i]))
+        i += 1
+    endwhile
+
+    if BellyContent.Length > 0
+        StartTimer(10.0, 70)
+    else
+        isProcessingVore = false
+        Debug.Notification("Empty Belly")
+    endif
 endfunction

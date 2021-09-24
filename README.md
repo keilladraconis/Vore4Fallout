@@ -9,6 +9,8 @@ Inspired by:
 Fallout Vore 3.0 is very hard to install, buggy, and hasn't been updated in some time. Its features are extensive, complicated, and difficult to comprehend in the code. It also conflicts with Coldsteel's weight gain mod, since both mods fight over the same sliders. This is a reimplementation with the goal of being simple, easy to install, and easy to maintain.
 
 ## Goal
+An easy, simple mod in which you can eat the bounty of the wasteland, and get fat.
+
 Make consumption more interesting, with real gameplay impact and fun features. You now have limits on how much food you can eat, and eating lots of food (as you are force to do early game) will make you fat, and being fat has upsides and downsides. Consumption has RPG elements, benefitting from your S.P.E.C.I.A.L. stats, and offering temporary boosts as well. Your stats will affect how your body shapes up.
 
 Limits spice up gameplay, making stimpaks and other non-fattening health items more precious. Pushing beyond your limits is a fun way to earn boons.
@@ -26,7 +28,7 @@ Frankly, I think most of this stuff should be scoped to companion mods. A great 
 * Companion stuff
 * Sound Effects
 * Non-lethal swallow
-* Player Vore
+* Being a victim of NPC vore
 
 ## Sweet Features
 * Realistic metabolism
