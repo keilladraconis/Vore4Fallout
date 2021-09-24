@@ -1,0 +1,1 @@
+Scriptname V4F_StomachAcidEffect extends activemagiceffect

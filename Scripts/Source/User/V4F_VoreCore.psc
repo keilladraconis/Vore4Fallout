@@ -23,6 +23,8 @@ Perk Property V4F_Perception3 Auto Const
 Perk Property V4F_Perception4 Auto Const
 Perk Property V4F_Perception5 Auto Const
 ObjectReference Property V4FStomach Auto Const
+ObjectReference Property V4FStomachObs Auto Const
+Weapon Property V4F_Swallow Auto Const
 
 struct Vore
     float food = 0.0
@@ -132,6 +134,9 @@ Function Setup()
     Self.RegisterForPlayerSleep()
     StartTimer(60.0 / timeWarp, 1)
 
+    ; Give swallow weapon
+    EnsureSwallowItem()
+
     ; Prep other scripts
     IntelligencePerkSetup()
     CharismaPerkSetup()
@@ -139,7 +144,7 @@ Function Setup()
     StrengthPerkSetup()
     PerceptionPerkSetup()
 
-    Player.MoveTo(V4FStomach) ; Debug.
+    Player.MoveTo(V4FStomachObs) ; Debug.
 EndFunction
 
 function WarpSpeedMode(float warp)
@@ -609,4 +614,22 @@ endfunction
 function PerceptionPerkDecay(float time)
     PerceptionPerkProgress -= time * PerceptionPerkDecay
     ApplyPerceptionPerks()
+endfunction
+
+function EnsureSwallowItem()
+    float swallows = Player.GetItemCount(V4F_Swallow)
+    if swallows == 1.0
+        return
+    elseif swallows >= 1.0
+        while swallows > 1.0
+            Player.RemoveItem(V4F_Swallow)
+            swallows -= 1.0
+        endwhile
+    else
+        Player.AddItem(V4F_Swallow)
+    endif
+endfunction
+
+function HandleSwallow(Actor prey)
+    prey.MoveTo(V4FStomach)
 endfunction
