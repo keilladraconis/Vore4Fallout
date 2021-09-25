@@ -1,30 +1,10 @@
 Scriptname V4F_VoreCore extends Quest
 
 ; Properties populated through CK
-V4F_Endurance Property EndurancePerk Auto Const Mandatory
-Perk Property V4F_Intelligence1 Auto Const
-Perk Property V4F_Intelligence2 Auto Const
-Perk Property V4F_Intelligence3 Auto Const
-Perk Property V4F_Intelligence4 Auto Const
-Perk Property V4F_Intelligence5 Auto Const
-Perk Property V4F_Charisma1 Auto Const
-Perk Property V4F_Charisma2 Auto Const
-Perk Property V4F_Charisma3 Auto Const
-Perk Property V4F_Charisma4 Auto Const
-Perk Property V4F_Charisma5 Auto Const
-Perk Property V4F_Strength1 Auto Const
-Perk Property V4F_Strength2 Auto Const
-Perk Property V4F_Strength3 Auto Const
-Perk Property V4F_Strength4 Auto Const
-Perk Property V4F_Strength5 Auto Const
-Perk Property V4F_Perception1 Auto Const
-Perk Property V4F_Perception2 Auto Const
-Perk Property V4F_Perception3 Auto Const
-Perk Property V4F_Perception4 Auto Const
-Perk Property V4F_Perception5 Auto Const
 ObjectReference Property V4FStomach Auto Const
 ObjectReference Property V4FStomachObs Auto Const
 Weapon Property V4F_Swallow Auto Const
+V4F_StrengthQ Property StrengthQ Auto Const
 
 struct Vore
     float food = 0.0
@@ -69,22 +49,6 @@ float metabolicRate = -0.0289 ; Assuming 2500 calories per day.
 float digestHealthRestore = 0.001 ; 1 hp per 1000 calories 
 float calorieDensity = 144000.0 ; If the full belly is 1.25 feet in radius, 8 cubic feet, or 60 gallons, then at 2400 calories per gallon a full belly of milk would be 144000 calories.
 
-float IntelligencePerkProgress = 0.0
-float IntelligencePerkRate
-float IntelligencePerkDecay
-
-float CharismaPerkProgress = 0.0
-float CharismaPerkRate
-float CharismaPerkDecay
-
-float StrengthPerkProgress = 0.0
-float StrengthPerkRate
-float StrengthPerkDecay
-
-float PerceptionPerkProgress = 0.0
-float PerceptionPerkRate
-float PerceptionPerkDecay
-
 Body pPlayerBody
 Body Property PlayerBody
     Body function get()
@@ -109,8 +73,9 @@ ActorValue AgilityAV
 ActorValue LuckAV
 ActorValue HealthAV
 
-CustomEvent EnduranceUpdate
-CustomEvent SleepUpdate
+CustomEvent StomachStrainEvent
+CustomEvent VoreEvent
+CustomEvent BodyMassEvent
 
 Actor[] BellyContent
 bool isProcessingVore
@@ -145,13 +110,6 @@ Function Setup()
     ; Give swallow weapon
     EnsureSwallowItem()
 
-    ; Prep other scripts
-    IntelligencePerkSetup()
-    CharismaPerkSetup()
-    EndurancePerk.Setup()
-    StrengthPerkSetup()
-    PerceptionPerkSetup()
-
     Player.MoveTo(V4FStomachObs) ; Debug.
 EndFunction
 
@@ -165,7 +123,7 @@ endfunction
 ; EVENTS
 ; ======
 Event Actor.OnPlayerLoadGame(Actor akSender)
-	Setup()
+	; Setup()
 EndEvent
 
 Event OnPlayerSleepStart(float afSleepStartTime, float afDesiredSleepEndTime, ObjectReference akBed)
@@ -175,58 +133,21 @@ EndEvent
 Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
     ; Time is reported as a floating point number where 1 is a whole day. 1 hour is 1/24 expressed as a decimal. (1.0 / 24.0) * 60 * 60 = 150
     float timeDelta = (Utility.GetCurrentGameTime() - sleepStart) / (1.0 / 24.0) * 60 * 60
-    float calories = Digest(timeDelta * Player.GetValue(StrengthAV) * timeWarp)
-    if isProcessingVore
-        ProcessVore(timeDelta / 10.0)
-    endif
-    Metabolize(calories + ComputeMetabolicRate(timeDelta)) ; Represents the base metabolic rate of the player. Burn calories.      
-    UpdateBody()
-    MorphBody()
-    IntelligencePerkDecay(timeDelta)
-    CharismaPerkDecay(timeDelta)
-    StrengthPerkDecay(timeDelta)
-    PerceptionPerkDecay(timeDelta)
+    Update(timeDelta * timeWarp)
 EndEvent
 
 Event OnTimer(int timer)
     if timer == 1
-        if !isProcessingVore
-            float calories = Digest(60.0 * Player.GetValue(StrengthAV) * timeWarp)
-            
-            Metabolize(calories + ComputeMetabolicRate(60.0)) ; Represents the base metabolic rate of the player. Burn calories.
-            UpdateBody()
-            MorphBody()
-        endif
-        StartTimer(60.0 / timeWarp, 1)
-    elseif timer == 30
-        IntelligencePerkDecay(1.0)
-        StartTimer(3600.0, 30)
-    elseif timer == 40
-        CharismaPerkDecay(1.0)
-        StartTimer(3600.0, 40)
-    elseif timer == 50
-        StrengthPerkDecay(1.0)
-        StartTimer(3600.0, 50)
-    elseif timer == 60
-        PerceptionPerkDecay(1.0)
-        StartTimer(3600.0, 60)
+        Update(60.0 * timeWarp)
+        StartTimer(60.0, 1)
     elseif timer == 70
         ProcessVore(10.0)
     endif
 endevent
 
-float function ComputeMetabolicRate(float time)
-    float agilityBonus = Player.GetValue(AgilityAV) / 4.0
-    return metabolicRate * time * agilityBonus * calorieWarp
-endfunction
-
 ; ======
 ; Public
 ; ======
-Function TestHookup(ScriptObject caller)
-    Debug.Notification("Called by " + caller)
-EndFunction
-
 function AddFood(float amount, activemagiceffect foodEffect)
     PlayerVore.food += amount * foodWarp
     float maxBelly = BellyMaxByAV()
@@ -236,7 +157,8 @@ function AddFood(float amount, activemagiceffect foodEffect)
             foodeffect.Dispel()
         EndIf
         Player.DamageValue(HealthAV, Math.Min(50, excess * 1000)) ; In case of warp, don't just die instantly.
-        SendCustomEvent("EnduranceUpdate", new Var[0])
+        SendCustomEvent("StomachStrainEvent", new Var[0])
+        Debug.Notification("You have no room in your stomach!")
     EndIf
     UpdateBody()
     MorphBody()
@@ -253,15 +175,62 @@ bool function AddVore(float amount)
     if (BellyTotal() + amount) > maxBelly
         float excess = (BellyTotal() + amount) - maxBelly
         Player.DamageValue(HealthAV, Math.Min(50, excess * 1000))
-        SendCustomEvent("EnduranceUpdate", new Var[0])
+        Var[] args = new Var[0]
+        SendCustomEvent("StomachStrainEvent", args)
         return false
     else
         PlayerVore.prey += amount
-        ProteinFood()
+        Var[] args = new Var[0]
+        SendCustomEvent("VoreEvent", args)
+        StrengthQ.Increment()
         UpdateBody()
         MorphBody()
         return true
     endif
+endfunction
+
+function HandleSwallow(Actor prey)
+    if BellyContent == NONE
+        BellyContent = new Actor[0]
+    endif
+
+    if AddVore(1.0)
+        Player.SetRelationshipRank(prey, -4)
+        prey.MoveTo(V4FStomach)
+        BellyContent.Add(prey)
+        if !isProcessingVore
+            isProcessingVore = true
+            StartTimer(10.0, 70)
+        endif
+    else
+        Debug.Notification("You have no room in your stomach!")
+    endif
+endfunction
+
+; =======
+; Private
+; =======
+
+function Update(float time)
+    float calories = Digest(time * Player.GetValue(StrengthAV))
+    if isProcessingVore
+        ProcessVore(time / 10.0)
+    endif
+    Metabolize(calories + ComputeMetabolicRate(time)) ; Represents the base metabolic rate of the player. Burn calories.      
+    UpdateBody()
+    MorphBody()
+    SendBodyMassEvent()
+endfunction
+
+function SendBodyMassEvent()
+    Var[] args = new Var[0]
+    args[0] = PlayerVore.prey + (PlayerVore.food / 4.0) + PlayerVore.fat
+    SendCustomEvent("BodyMassEvent", args)
+endfunction
+
+float function ComputeMetabolicRate(float time)
+    float agilityBonus = Player.GetValue(AgilityAV) / 4.0
+    return metabolicRate * time * agilityBonus * calorieWarp
 endfunction
 
 float Function BellyTotal()
@@ -316,10 +285,7 @@ float function Digest(float digestAmount)
     PlayerVore.food += digestToFood
     return digestCalories
 endfunction
- 
-; =======
-; Private
-; =======
+
 function UpdateBody()
     PlayerBody.bbw = PlayerVore.fat
     PlayerBody.vorePreyBelly = PlayerVore.prey
@@ -528,179 +494,6 @@ float Function ButtMaxByAV()
     return Player.GetValue(CharismaAV) / 10.0
 EndFunction
 
-;; Handling Intelligence Perk "Sweet Foods"
-;; TimerID = 30
-function IntelligencePerkSetup()
-    IntelligencePerkRate = 0.025
-    IntelligencePerkDecay = 0.125
-    StartTimer(3600.0, 30)
-endfunction
-
-function SweetFood()
-    IntelligencePerkProgress += IntelligencePerkRate
-    ApplyIntelligencePerks()
-endfunction
-
-function ApplyIntelligencePerks()
-    Player.RemovePerk(V4F_Intelligence1)
-    Player.RemovePerk(V4F_Intelligence2)
-    Player.RemovePerk(V4F_Intelligence3)
-    Player.RemovePerk(V4F_Intelligence4)
-    Player.RemovePerk(V4F_Intelligence5)
-    if IntelligencePerkProgress >= 1.0
-        Player.AddPerk(V4F_Intelligence1)
-    endif
-    if IntelligencePerkProgress >= 2.0
-        Player.AddPerk(V4F_Intelligence2)
-    endif
-    if IntelligencePerkProgress >= 3.0
-        Player.AddPerk(V4F_Intelligence3)
-    endif
-    if IntelligencePerkProgress >= 4.0
-        Player.AddPerk(V4F_Intelligence4)
-    endif
-    if IntelligencePerkProgress >= 5.0
-        Player.AddPerk(V4F_Intelligence5)
-    endif
-    StartTimer(3600.0, 30)
-endfunction
-
-function IntelligencePerkDecay(float time)
-    if IntelligencePerkProgress > 0.0
-        IntelligencePerkProgress -= time * IntelligencePerkDecay
-        if IntelligencePerkProgress < 0.0
-            IntelligencePerkProgress = 0.0
-        endif
-        ApplyIntelligencePerks()
-    endif
-endfunction
-
-;; Handling Charisma Perk "Fatty Foods"
-;; TimerID = 40
-function CharismaPerkSetup()
-    CharismaPerkRate = 0.025
-    CharismaPerkDecay = 0.125
-    StartTimer(3600.0, 40)
-endfunction
-
-function FattyFood()
-    CharismaPerkProgress += CharismaPerkRate
-    ApplyCharismaPerks()
-endfunction
-
-function ApplyCharismaPerks()
-    Player.RemovePerk(V4F_Charisma1)
-    Player.RemovePerk(V4F_Charisma2)
-    Player.RemovePerk(V4F_Charisma3)
-    Player.RemovePerk(V4F_Charisma4)
-    Player.RemovePerk(V4F_Charisma5)
-    if CharismaPerkProgress >= 1.0
-        Player.AddPerk(V4F_Charisma1)
-    endif
-    if CharismaPerkProgress >= 2.0
-        Player.AddPerk(V4F_Charisma2)
-    endif
-    if CharismaPerkProgress >= 3.0
-        Player.AddPerk(V4F_Charisma3)
-    endif
-    if CharismaPerkProgress >= 4.0
-        Player.AddPerk(V4F_Charisma4)
-    endif
-    if CharismaPerkProgress >= 5.0
-        Player.AddPerk(V4F_Charisma5)
-    endif
-    StartTimer(3600.0, 40)
-endfunction
-
-function CharismaPerkDecay(float time)
-    CharismaPerkProgress -= time * CharismaPerkDecay
-    ApplyCharismaPerks()
-endfunction
-
-;; Handling Strength Perk "Protein Foods"
-;; TimerID = 50
-function StrengthPerkSetup()
-    StrengthPerkRate = 0.025
-    StrengthPerkDecay = 0.125
-    StartTimer(3600.0, 50)
-endfunction
-
-function ProteinFood()
-    StrengthPerkProgress += StrengthPerkRate
-    ApplyStrengthPerks()
-endfunction
-
-function ApplyStrengthPerks()
-    Player.RemovePerk(V4F_Strength1)
-    Player.RemovePerk(V4F_Strength2)
-    Player.RemovePerk(V4F_Strength3)
-    Player.RemovePerk(V4F_Strength4)
-    Player.RemovePerk(V4F_Strength5)
-    if StrengthPerkProgress >= 1.0
-        Player.AddPerk(V4F_Strength1)
-    endif
-    if StrengthPerkProgress >= 2.0
-        Player.AddPerk(V4F_Strength2)
-    endif
-    if StrengthPerkProgress >= 3.0
-        Player.AddPerk(V4F_Strength3)
-    endif
-    if StrengthPerkProgress >= 4.0
-        Player.AddPerk(V4F_Strength4)
-    endif
-    if StrengthPerkProgress >= 5.0
-        Player.AddPerk(V4F_Strength5)
-    endif
-    StartTimer(3600.0, 50)
-endfunction
-
-function StrengthPerkDecay(float time)
-    StrengthPerkProgress -= time * StrengthPerkDecay
-    ApplyStrengthPerks()
-endfunction
-
-;; Handling Perception Perk "Health Foods"
-;; TimerID = 60
-function PerceptionPerkSetup()
-    PerceptionPerkRate = 0.025
-    PerceptionPerkDecay = 0.125
-    StartTimer(3600.0, 60)
-endfunction
-
-function HealthFood()
-    PerceptionPerkProgress += PerceptionPerkRate
-    ApplyPerceptionPerks()
-endfunction
-
-function ApplyPerceptionPerks()
-    Player.RemovePerk(V4F_Perception1)
-    Player.RemovePerk(V4F_Perception2)
-    Player.RemovePerk(V4F_Perception3)
-    Player.RemovePerk(V4F_Perception4)
-    Player.RemovePerk(V4F_Perception5)
-    if PerceptionPerkProgress >= 1.0
-        Player.AddPerk(V4F_Perception1)
-    endif
-    if PerceptionPerkProgress >= 2.0
-        Player.AddPerk(V4F_Perception2)
-    endif
-    if PerceptionPerkProgress >= 3.0
-        Player.AddPerk(V4F_Perception3)
-    endif
-    if PerceptionPerkProgress >= 4.0
-        Player.AddPerk(V4F_Perception4)
-    endif
-    if PerceptionPerkProgress >= 5.0
-        Player.AddPerk(V4F_Perception5)
-    endif
-    StartTimer(3600.0, 60)
-endfunction
-
-function PerceptionPerkDecay(float time)
-    PerceptionPerkProgress -= time * PerceptionPerkDecay
-    ApplyPerceptionPerks()
-endfunction
-
 function EnsureSwallowItem()
     float swallows = Player.GetItemCount(V4F_Swallow)
     if swallows == 1.0
@@ -712,24 +505,6 @@ function EnsureSwallowItem()
         endwhile
     else
         Player.AddItem(V4F_Swallow)
-    endif
-endfunction
-
-function HandleSwallow(Actor prey)
-    if BellyContent == NONE
-        BellyContent = new Actor[0]
-    endif
-
-    if AddVore(1.0)
-        Player.SetRelationshipRank(prey, -4)
-        prey.MoveTo(V4FStomach)
-        BellyContent.Add(prey)
-        if !isProcessingVore
-            isProcessingVore = true
-            StartTimer(10.0, 70)
-        endif
-    else
-        Debug.Notification("You have no room in your stomach!")
     endif
 endfunction
 
