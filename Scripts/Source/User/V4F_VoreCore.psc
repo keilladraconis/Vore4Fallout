@@ -49,6 +49,9 @@ float metabolicRate = -0.0289 ; Assuming 2500 calories per day.
 float digestHealthRestore = 0.001 ; 1 hp per 1000 calories 
 float calorieDensity = 144000.0 ; If the full belly is 1.25 feet in radius, 8 cubic feet, or 60 gallons, then at 2400 calories per gallon a full belly of milk would be 144000 calories.
 
+float property BreastMax = 0.0 Auto
+float property ButtMax = 0.0 Auto
+
 Body pPlayerBody
 Body Property PlayerBody
     Body function get()
@@ -76,6 +79,7 @@ ActorValue HealthAV
 CustomEvent StomachStrainEvent
 CustomEvent VoreEvent
 CustomEvent BodyMassEvent
+CustomEvent BodyShapeEvent
 
 Actor[] BellyContent
 bool isProcessingVore
@@ -83,8 +87,6 @@ bool isProcessingVore
 ; Called when the quest initializes
 Event OnInit()
     Setup()
-    Self.RegisterForPlayerSleep()
-    RegisterForRemoteEvent(Game.GetPlayer(), "OnPlayerLoadGame")
 EndEvent
 
 Function Setup()
@@ -103,8 +105,12 @@ Function Setup()
     digestHealthRestore = 0.001
     digestionRate = 0.000017
     calorieDensity = 144000.0
+    BreastMax = 0.0
+    ButtMax = 0.0
     WarpSpeedMode(1.0)
-    ; Self.RegisterForPlayerWait()
+    Self.RegisterForPlayerSleep()
+    Self.RegisterForPlayerWait()
+    RegisterForRemoteEvent(Game.GetPlayer(), "OnPlayerLoadGame")
     StartTimer(60.0 / timeWarp, 1)
 
     ; Give swallow weapon
@@ -123,7 +129,7 @@ endfunction
 ; EVENTS
 ; ======
 Event Actor.OnPlayerLoadGame(Actor akSender)
-	; Setup()
+	Setup()
 EndEvent
 
 Event OnPlayerSleepStart(float afSleepStartTime, float afDesiredSleepEndTime, ObjectReference akBed)
@@ -131,6 +137,16 @@ Event OnPlayerSleepStart(float afSleepStartTime, float afDesiredSleepEndTime, Ob
 EndEvent
 
 Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
+    ; Time is reported as a floating point number where 1 is a whole day. 1 hour is 1/24 expressed as a decimal. (1.0 / 24.0) * 60 * 60 = 150
+    float timeDelta = (Utility.GetCurrentGameTime() - sleepStart) / (1.0 / 24.0) * 60 * 60
+    Update(timeDelta * timeWarp)
+EndEvent
+
+Event OnPlayerWaitStart(float afWaitStartTime, float afDesiredWaitEndTime)
+        sleepStart = afWaitStartTime
+EndEvent
+
+Event OnPlayerWaitStop(bool abInterrupted)
     ; Time is reported as a floating point number where 1 is a whole day. 1 hour is 1/24 expressed as a decimal. (1.0 / 24.0) * 60 * 60 = 150
     float timeDelta = (Utility.GetCurrentGameTime() - sleepStart) / (1.0 / 24.0) * 60 * 60
     Update(timeDelta * timeWarp)
@@ -160,8 +176,7 @@ function AddFood(float amount, activemagiceffect foodEffect)
         SendCustomEvent("StomachStrainEvent", new Var[0])
         Debug.Notification("You have no room in your stomach!")
     EndIf
-    UpdateBody()
-    MorphBody()
+    Update(0.0)
 endfunction
 
 bool function AddVore(float amount)
@@ -182,9 +197,7 @@ bool function AddVore(float amount)
         PlayerVore.prey += amount
         Var[] args = new Var[0]
         SendCustomEvent("VoreEvent", args)
-        StrengthQ.Increment()
-        UpdateBody()
-        MorphBody()
+        Update(0.0)
         return true
     endif
 endfunction
@@ -212,6 +225,8 @@ endfunction
 ; =======
 
 function Update(float time)
+    Debug.Trace("PlayerVore: " + PlayerVore)
+    Debug.Trace("BrM: " + BreastMax + " BtM: " + ButtMax)
     float calories = Digest(time * Player.GetValue(StrengthAV))
     if isProcessingVore
         ProcessVore(time / 10.0)
@@ -220,12 +235,20 @@ function Update(float time)
     UpdateBody()
     MorphBody()
     SendBodyMassEvent()
+    SendBodyShapeEvent()
 endfunction
 
 function SendBodyMassEvent()
-    Var[] args = new Var[0]
+    Var[] args = new Var[1]
     args[0] = PlayerVore.prey + (PlayerVore.food / 4.0) + PlayerVore.fat
     SendCustomEvent("BodyMassEvent", args)
+endfunction
+
+function SendBodyShapeEvent()
+    Var[] args = new Var[2]
+    args[0] = PlayerVore.topFat
+    args[1] = PlayerVore.bottomFat
+    SendCustomEvent("BodyShapeEvent", args)
 endfunction
 
 float function ComputeMetabolicRate(float time)
@@ -455,10 +478,9 @@ EndFunction
 float Function MetabolizeTop(float calories)
     PlayerVore.topFat += (calories / 3500) * 0.025
 
-    float breastsMax = BreastsMaxByAV()
-    If PlayerVore.topFat > breastsMax
-        float excess = PlayerVore.topFat - breastsMax
-        PlayerVore.topFat = breastsMax
+    If PlayerVore.topFat > BreastMax
+        float excess = PlayerVore.topFat - BreastMax
+        PlayerVore.topFat = BreastMax
         return excess * 40 * 3500
     ElseIf PlayerVore.topFat < 0.0
         float excess = PlayerVore.topFat
@@ -469,17 +491,12 @@ float Function MetabolizeTop(float calories)
     EndIf
 EndFunction
 
-float Function BreastsMaxByAV()
-    return Player.GetValue(IntelligenceAV) / 10.0
-EndFunction
-
 float Function MetabolizeBottom(float calories)
     PlayerVore.bottomFat += (calories / 3500) * 0.01
 
-    float buttMax = ButtMaxByAV()
-    If PlayerVore.bottomFat > buttMax
-        float excess = PlayerVore.bottomFat - buttMax
-        PlayerVore.bottomFat = buttMax
+    If PlayerVore.bottomFat > ButtMax
+        float excess = PlayerVore.bottomFat - ButtMax
+        PlayerVore.bottomFat = ButtMax
         return excess * 100 * 3500
     ElseIf PlayerVore.bottomFat < 0.0
         float excess = PlayerVore.bottomFat
@@ -488,10 +505,6 @@ float Function MetabolizeBottom(float calories)
     Else
         return 0.0
     EndIf
-EndFunction
-
-float Function ButtMaxByAV()
-    return Player.GetValue(CharismaAV) / 10.0
 EndFunction
 
 function EnsureSwallowItem()

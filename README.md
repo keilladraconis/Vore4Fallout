@@ -66,7 +66,10 @@ Frankly, I think most of this stuff should be scoped to companion mods. A great 
 
 ## Vore notes
 
-For the vore burden...
-Vorecore generates a custom event which passes the vore + (food / 4) + bbw. Vore burden quest is registered for this event and recieves it.
+Intelligence and Charisma should be dependent on your actual fatness, rather than the reverse.
 
-Then it simply applies perks based on how close to 1.0 you are. Moving in fifths.
+What this means is that perk progress will not directly lead to gaining perks. Instead, the perk tells the core what the maximum top/bottom fat value is.
+
+The perk will also receive a custom event for body shape updates and use that to apply the perks.
+
+So, the top/bottom heaviness is based not on the charisma score, but the perk progress. No matter your base charisma score you can't get top heavy until you eat a lot of sweets.

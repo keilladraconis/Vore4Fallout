@@ -23,8 +23,8 @@ function Setup()
     PerkDecay = 0.125
     StartTimer(3600.0, 1)
     Player = Game.GetPlayer()
-
     Self.RegisterForPlayerSleep()
+    Self.RegisterForPlayerWait()
     RegisterForRemoteEvent(Game.GetPlayer(), "OnPlayerLoadGame")
     RegisterForCustomEvent(VoreCore, "VoreEvent")
 endfunction
@@ -44,6 +44,16 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
     ; Time is reported as a floating point number where 1 is a whole day. 1 hour is 1/24 expressed as a decimal. (1.0 / 24.0) * 60 * 60 = 150
     float timeDelta = (Utility.GetCurrentGameTime() - sleepStart) / (1.0 / 24.0) * 60 * 60
    
+    PerkDecay(timeDelta / 3600.0)
+EndEvent
+
+Event OnPlayerWaitStart(float afWaitStartTime, float afDesiredWaitEndTime)
+    sleepStart = afWaitStartTime
+EndEvent
+
+Event OnPlayerWaitStop(bool abInterrupted)
+    ; Time is reported as a floating point number where 1 is a whole day. 1 hour is 1/24 expressed as a decimal. (1.0 / 24.0) * 60 * 60 = 150
+    float timeDelta = (Utility.GetCurrentGameTime() - sleepStart) / (1.0 / 24.0) * 60 * 60
     PerkDecay(timeDelta / 3600.0)
 EndEvent
 
