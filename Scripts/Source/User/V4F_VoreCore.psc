@@ -183,7 +183,7 @@ bool function AddVore(float amount)
     if PlayerVore.prey < 0.5
         amount = amount / 2.0
     elseif PlayerVore.prey >= 0.5
-        amount = amount / 10.0
+        amount = amount / 5.0
     endif
     float maxBelly = BellyMaxByAV()
     float newPrey = PlayerVore.prey + amount
@@ -208,6 +208,9 @@ function HandleSwallow(Actor prey)
     endif
 
     if AddVore(1.0)
+        if prey.IsDead()
+            Cleanup(prey)
+        endif
         Player.SetRelationshipRank(prey, -4)
         prey.MoveTo(V4FStomach)
         BellyContent.Add(prey)
@@ -240,7 +243,7 @@ endfunction
 
 function SendBodyMassEvent()
     Var[] args = new Var[1]
-    args[0] = PlayerVore.prey + (PlayerVore.food / 4.0) + PlayerVore.fat
+    args[0] = PlayerVore.prey + (PlayerVore.food / 4.0) + (PlayerVore.fat / 5.0)
     SendCustomEvent("BodyMassEvent", args)
 endfunction
 
@@ -274,11 +277,11 @@ float function Digest(float digestAmount)
         float digestPlus = PlayerVore.prey - 0.5 - digestActual
         if digestPlus >= 0.0
             PlayerVore.prey -= digestActual
-            digestToFood += digestActual * 10.0
+            digestToFood += digestActual * 2.5
             digestActual = 0.0
         else
             PlayerVore.prey -= digestActual + digestPlus
-            digestToFood += (digestActual + digestPlus) * 10.0
+            digestToFood += (digestActual + digestPlus) * 2.5
             digestActual = Math.abs(digestPlus)
         endif
     endif
@@ -541,7 +544,11 @@ function ProcessVore(float time = 10.0)
 
     i = 0
     while i < deadList.Length
-        BellyContent.Remove(BellyContent.Find(deadList[i]))
+        int deadPreyIndex = BellyContent.Find(deadList[i])
+        Actor deadPrey = BellyContent[deadPreyIndex]
+        Cleanup(deadPrey)
+
+        BellyContent.Remove(deadPreyIndex)
         i += 1
     endwhile
 
@@ -550,4 +557,10 @@ function ProcessVore(float time = 10.0)
     else
         isProcessingVore = false
     endif
+endfunction
+
+function Cleanup(Actor prey)
+    prey.RemoveAllItems(Player)
+    prey.SetCriticalStage(4)
+    prey.MoveToMyEditorLocation()
 endfunction
