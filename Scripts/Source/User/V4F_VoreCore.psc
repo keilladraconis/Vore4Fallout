@@ -80,6 +80,7 @@ CustomEvent StomachStrainEvent
 CustomEvent VoreEvent
 CustomEvent BodyMassEvent
 CustomEvent BodyShapeEvent
+CustomEvent OnDigest
 
 Actor[] BellyContent
 bool isProcessingVore
@@ -116,7 +117,7 @@ Function Setup()
     ; Give swallow weapon
     EnsureSwallowItem()
 
-    Player.MoveTo(V4FStomachObs) ; Debug.
+    ; Player.MoveTo(V4FStomachObs) ; Debug.
 EndFunction
 
 function WarpSpeedMode(float warp)
@@ -562,5 +563,7 @@ endfunction
 function Cleanup(Actor prey)
     prey.RemoveAllItems(Player)
     prey.SetCriticalStage(4)
+    Var[] args = new Var[0]
+    SendCustomEvent("OnDigest", args)
     prey.MoveToMyEditorLocation()
 endfunction
