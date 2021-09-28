@@ -5,6 +5,7 @@ ObjectReference Property V4FStomach Auto Const
 ObjectReference Property V4FStomachObs Auto Const
 Weapon Property V4F_Swallow Auto Const
 V4F_StrengthQ Property StrengthQ Auto Const
+Hardcore:HC_ManagerScript Property HC_Manager Auto
 
 struct Vore
     float food = 0.0
@@ -563,7 +564,6 @@ endfunction
 function Cleanup(Actor prey)
     prey.RemoveAllItems(Player)
     prey.SetCriticalStage(4)
-    Var[] args = new Var[0]
-    SendCustomEvent("OnDigest", args)
+    HC_Manager.ModFoodPoolAndUpdateHungerEffects(9999, true) ; Vore is hardcore food
     prey.MoveToMyEditorLocation()
 endfunction
