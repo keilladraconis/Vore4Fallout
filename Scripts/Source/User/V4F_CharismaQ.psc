@@ -32,7 +32,7 @@ endfunction
 ; EVENTS
 ; ======
 Event Actor.OnPlayerLoadGame(Actor akSender)
-	Setup()
+	; Setup()
 EndEvent
 
 Event OnPlayerSleepStart(float afSleepStartTime, float afDesiredSleepEndTime, ObjectReference akBed)

@@ -29,7 +29,7 @@ endfunction
 ; EVENTS
 ; ======
 Event Actor.OnPlayerLoadGame(Actor akSender)
-	Setup()
+	; Setup()
 EndEvent
 
 Event V4F_VoreCore.BodyMassEvent(V4F_VoreCore sender, Var[] args)
