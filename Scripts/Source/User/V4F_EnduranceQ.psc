@@ -6,6 +6,7 @@ Perk Property V4F_Endurance3 Auto
 Perk Property V4F_Endurance4 Auto
 Perk Property V4F_Endurance5 Auto
 
+int scriptVersion = 0
 float PerkProgress = 0.0
 float PerkRate
 float PerkDecay
@@ -28,11 +29,19 @@ function Setup()
     RegisterForRemoteEvent(Game.GetPlayer(), "OnPlayerLoadGame")
 endfunction
 
+function Update(int version)
+    if scriptVersion < 1
+        RegisterForCustomEvent(VoreCore, "VoreEvent")
+        RegisterForCustomEvent(VoreCore, "StomachStrainEvent")
+        scriptVersion = 1
+    endif
+endfunction
+
 ; ======
 ; EVENTS
 ; ======
 Event Actor.OnPlayerLoadGame(Actor akSender)
-	; Setup()
+	Update(1)
 EndEvent
 
 Event OnPlayerSleepStart(float afSleepStartTime, float afDesiredSleepEndTime, ObjectReference akBed)
@@ -60,6 +69,14 @@ Event OnTimer(int timer)
     PerkDecay(1.0)
     StartTimer(3600.0, 1)
 endevent
+
+Event V4F_VoreCore.VoreEvent(V4F_VoreCore akSender, Var[] akArgs)
+    Increment()
+EndEvent
+
+Event V4F_VoreCore.StomachStrainEvent(V4F_VoreCore akSender, Var[] akArgs)
+    Increment()
+EndEvent
 
 ; ========
 ; Public

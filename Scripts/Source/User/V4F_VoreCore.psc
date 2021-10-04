@@ -6,6 +6,7 @@ ObjectReference Property V4FStomachObs Auto Const
 Weapon Property V4F_Swallow Auto Const
 V4F_StrengthQ Property StrengthQ Auto Const
 Hardcore:HC_ManagerScript Property HC_Manager Auto
+FormList Property V4F_EdibleSmall Auto Const
 
 struct Vore
     float food = 0.0
@@ -174,7 +175,7 @@ function AddFood(float amount, activemagiceffect foodEffect)
         If foodeffect != NONE
             foodeffect.Dispel()
         EndIf
-        Player.DamageValue(HealthAV, Math.Min(50, excess * 1000)) ; In case of warp, don't just die instantly.
+        Player.DamageValue(HealthAV, Math.Min(10, excess * 100)) ; In case of warp, don't just die instantly.
         SendCustomEvent("StomachStrainEvent", new Var[0])
         Debug.Notification("You have no room in your stomach!")
     EndIf
@@ -190,10 +191,7 @@ bool function AddVore(float amount)
     float maxBelly = BellyMaxByAV()
     float newPrey = PlayerVore.prey + amount
     if (BellyTotal() + amount) > maxBelly
-        float excess = (BellyTotal() + amount) - maxBelly
-        Player.DamageValue(HealthAV, Math.Min(50, excess * 1000))
-        Var[] args = new Var[0]
-        SendCustomEvent("StomachStrainEvent", args)
+        Debug.Notification("T:" + BellyTotal() + " A:" + amount + " M:" + maxBelly)
         return false
     else
         PlayerVore.prey += amount
@@ -209,7 +207,15 @@ function HandleSwallow(Actor prey)
         BellyContent = new Actor[0]
     endif
 
-    if AddVore(1.0)
+    float preyVolume
+    if V4F_EdibleSmall.HasForm(prey.GetRace())
+        preyVolume = 0.25
+    else
+        Debug.Notification(prey.GetRace())
+        preyVolume = 1.0
+    endif
+
+    if AddVore(preyVolume)
         if prey.IsDead()
             Cleanup(prey)
         endif
