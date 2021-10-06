@@ -20,7 +20,7 @@ EndEvent
 
 function Setup()
     PerkRate = 0.005
-    PerkDecay = 0.025
+    PerkDecay = 0.00025
     StartTimer(3600.0, 1)
     Player = Game.GetPlayer()
     Self.RegisterForPlayerSleep()
@@ -77,6 +77,7 @@ function Increment()
         PerkProgress = 1.0
     endif
     VoreCore.BreastMax = PerkProgress
+    Debug.Trace("IntelligenceQ +:" + PerkProgress)
 endfunction
 
 ; ========
@@ -89,6 +90,7 @@ function PerkDecay(float time)
         PerkProgress = 0.0
     endif
     VoreCore.BreastMax = PerkProgress
+    Debug.Trace("IntelligenceQ -:" + PerkProgress)
 endfunction
 
 function ApplyPerks(float topFat)

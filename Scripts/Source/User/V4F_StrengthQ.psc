@@ -20,7 +20,7 @@ EndEvent
 
 function Setup()
     PerkRate = 0.025
-    PerkDecay = 0.125
+    PerkDecay = 0.00025
     StartTimer(3600.0, 1)
     Player = Game.GetPlayer()
     Self.RegisterForPlayerSleep()
@@ -73,6 +73,7 @@ endevent
 function Increment()
     PerkProgress += PerkRate
     ApplyPerks()
+    Debug.Trace("StrengthQ +:" + PerkProgress)
 endfunction
 
 ; ========
@@ -86,6 +87,7 @@ function PerkDecay(float time)
             PerkProgress = 0.0
         endif
         ApplyPerks()
+        Debug.Trace("StrengthQ -:" + PerkProgress)
     endif
 endfunction
 

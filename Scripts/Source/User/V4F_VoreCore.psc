@@ -7,6 +7,9 @@ Weapon Property V4F_Swallow Auto Const
 V4F_StrengthQ Property StrengthQ Auto Const
 Hardcore:HC_ManagerScript Property HC_Manager Auto
 FormList Property V4F_EdibleSmall Auto Const
+FormList Property V4F_EdibleMedium Auto Const
+FormList Property V4F_EdibleHuge Auto Const
+FormList Property V4F_EdibleMassive Auto Const
 
 struct Vore
     float food = 0.0
@@ -175,11 +178,11 @@ function AddFood(float amount, activemagiceffect foodEffect)
         If foodeffect != NONE
             foodeffect.Dispel()
         EndIf
-        Player.DamageValue(HealthAV, Math.Min(10, excess * 100)) ; In case of warp, don't just die instantly.
+        Player.DamageValue(HealthAV, Math.Min(25, excess * 100)) ; In case of warp, don't just die instantly.
         SendCustomEvent("StomachStrainEvent", new Var[0])
         Debug.Notification("You have no room in your stomach!")
     EndIf
-    Update(0.0)
+    Update(0.0, false)
 endfunction
 
 bool function AddVore(float amount)
@@ -191,13 +194,13 @@ bool function AddVore(float amount)
     float maxBelly = BellyMaxByAV()
     float newPrey = PlayerVore.prey + amount
     if (BellyTotal() + amount) > maxBelly
-        Debug.Notification("T:" + BellyTotal() + " A:" + amount + " M:" + maxBelly)
+        Debug.Trace("T:" + BellyTotal() + " A:" + amount + " M:" + maxBelly)
         return false
     else
         PlayerVore.prey += amount
         Var[] args = new Var[0]
         SendCustomEvent("VoreEvent", args)
-        Update(0.0)
+        Update(0.0, false)
         return true
     endif
 endfunction
@@ -207,11 +210,21 @@ function HandleSwallow(Actor prey)
         BellyContent = new Actor[0]
     endif
 
+    if prey.GetValuePercentage(HealthAV) > 0.5
+        return
+    endif
+
     float preyVolume
-    if V4F_EdibleSmall.HasForm(prey.GetRace())
+    Race preyRace = Prey.GetRace()
+    if V4F_EdibleSmall.HasForm(preyRace)
         preyVolume = 0.25
+    elseif V4F_EdibleMedium.HasForm(preyRace)
+        preyVolume = 0.5
+    elseif V4F_EdibleHuge.HasForm(preyRace)
+        preyVolume = 2.0
+    elseif V4F_EdibleMassive.HasForm(preyRace)
+        preyVolume = 10.0
     else
-        Debug.Notification(prey.GetRace())
         preyVolume = 1.0
     endif
 
@@ -235,18 +248,20 @@ endfunction
 ; Private
 ; =======
 
-function Update(float time)
-    Debug.Trace("PlayerVore: " + PlayerVore)
-    Debug.Trace("BrM: " + BreastMax + " BtM: " + ButtMax)
-    float calories = Digest(time * Player.GetValue(StrengthAV))
+function Update(float time, bool digest = true)
+    if digest
+        float calories = Digest(time * Player.GetValue(StrengthAV))
+        Metabolize(calories + ComputeMetabolicRate(time)) ; Represents the base metabolic rate of the player. Burn calories.      
+    endif
     if isProcessingVore
         ProcessVore(time / 10.0)
     endif
-    Metabolize(calories + ComputeMetabolicRate(time)) ; Represents the base metabolic rate of the player. Burn calories.      
     UpdateBody()
     MorphBody()
     SendBodyMassEvent()
     SendBodyShapeEvent()
+    Debug.Trace("PlayerVore: " + PlayerVore)
+    Debug.Trace("BrM: " + BreastMax + " BtM: " + ButtMax)
 endfunction
 
 function SendBodyMassEvent()
@@ -280,41 +295,56 @@ float function Digest(float digestAmount)
     float digestActual = digestAmount * digestionRate
     float digestToFood = 0.0
     float digestCalories = 0.0
+    float digestStep = 0.0
 
-    if PlayerVore.prey > 0.5
-        float digestPlus = PlayerVore.prey - 0.5 - digestActual
-        if digestPlus >= 0.0
-            PlayerVore.prey -= digestActual
-            digestToFood += digestActual * 2.5
-            digestActual = 0.0
+    Debug.Trace("Digest:" + digestActual)
+    ; Loop digestActual so that we do some incremental digestion steps rather than one single step.
+    ; This helps with digesting prey, so that you don't spend a whole 8 hours simply digesting only prey, but 
+    ; each loop you digest prey, then prey + food, etc.
+    while digestActual > 0.0 && (PlayerVore.prey > 0.0 || PlayerVore.food > 0.0)
+        Debug.Trace("WhileDigesting:" + PlayerVore)
+        digestActual -= 0.01
+        if digestActual < 0.0
+            digestStep = Math.abs(digestActual)
         else
-            PlayerVore.prey -= digestActual + digestPlus
-            digestToFood += (digestActual + digestPlus) * 2.5
-            digestActual = Math.abs(digestPlus)
+            digestStep = 0.01
         endif
-    endif
-
-    if digestActual > 0.0 && PlayerVore.prey <= 0.5 && PlayerVore.prey > 0.0
-        PlayerVore.prey -= digestActual
-        if PlayerVore.prey > 0.0
-            digestToFood += digestActual * 2.0
-            digestActual = 0.0
-        else
-            digestToFood += (digestActual + PlayerVore.prey) * 2.0
-            digestActual = Math.abs(PlayerVore.prey)
-            PlayerVore.prey = 0.0
+        
+        if PlayerVore.prey > 0.5
+            float digestPlus = PlayerVore.prey - 0.5 - digestStep
+            if digestPlus >= 0.0
+                PlayerVore.prey -= digestStep
+                digestToFood += digestStep * 2.5
+                digestStep = 0.0
+            else
+                PlayerVore.prey -= digestStep + digestPlus
+                digestToFood += (digestStep + digestPlus) * 2.5
+                digestStep = Math.abs(digestPlus)
+            endif
         endif
-    endif
-
-    if digestActual > 0.0 && PlayerVore.food > 0.0
-        PlayerVore.food -= digestActual
-        if PlayerVore.food > 0.0
-            digestCalories += digestActual * calorieDensity
-        else
-            digestCalories += (digestActual + PlayerVore.food) * calorieDensity
-            PlayerVore.food = 0.0
+    
+        if digestStep > 0.0 && PlayerVore.prey <= 0.5 && PlayerVore.prey > 0.0
+            PlayerVore.prey -= digestStep
+            if PlayerVore.prey > 0.0
+                digestToFood += digestStep * 2.0
+                digestStep = 0.0
+            else
+                digestToFood += (digestStep + PlayerVore.prey) * 2.0
+                digestStep = Math.abs(PlayerVore.prey)
+                PlayerVore.prey = 0.0
+            endif
         endif
-    endif
+    
+        if digestStep > 0.0 && PlayerVore.food > 0.0
+            PlayerVore.food -= digestStep
+            if PlayerVore.food > 0.0
+                digestCalories += digestStep * calorieDensity
+            else
+                digestCalories += (digestStep + PlayerVore.food) * calorieDensity
+                PlayerVore.food = 0.0
+            endif
+        endif
+    endwhile 
 
     PlayerVore.food += digestToFood
     return digestCalories

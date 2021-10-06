@@ -19,7 +19,7 @@ EndEvent
 
 function Setup()
     PerkRate = 0.005
-    PerkDecay = 0.025
+    PerkDecay = 0.00025
     StartTimer(3600.0, 1)
     Player = Game.GetPlayer()
     Self.RegisterForPlayerSleep()
@@ -76,6 +76,7 @@ function Increment()
         PerkProgress = 1.0
     endif
     VoreCore.ButtMax = PerkProgress
+    Debug.Trace("CharismaQ +:" + PerkProgress)
 endfunction
 
 ; ========
@@ -88,27 +89,28 @@ function PerkDecay(float time)
         PerkProgress = 0.0
     endif
     VoreCore.ButtMax = PerkProgress
+    Debug.Trace("CharismaQ -:" + PerkProgress)
 endfunction
 
-function ApplyPerks(float topFat)
+function ApplyPerks(float bottomFat)
     Player.RemovePerk(V4F_Charisma1)
     Player.RemovePerk(V4F_Charisma2)
     Player.RemovePerk(V4F_Charisma3)
     Player.RemovePerk(V4F_Charisma4)
     Player.RemovePerk(V4F_Charisma5)
-    if topFat >= 0.2
+    if bottomFat >= 0.2
         Player.AddPerk(V4F_Charisma1)
     endif
-    if topFat >= 0.4
+    if bottomFat >= 0.4
         Player.AddPerk(V4F_Charisma2)
     endif
-    if topFat >= 0.6
+    if bottomFat >= 0.6
         Player.AddPerk(V4F_Charisma3)
     endif
-    if topFat >= 0.8
+    if bottomFat >= 0.8
         Player.AddPerk(V4F_Charisma4)
     endif
-    if topFat >= 1.0
+    if bottomFat >= 1.0
         Player.AddPerk(V4F_Charisma5)
     endif
 endfunction
