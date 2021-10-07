@@ -1,5 +1,5 @@
 # Vore4Fallout
- Vore mod for Fallout 4
+ Vore and weight gain mod for Fallout 4
 
 Inspired by:
 [ColdSteelJ's Weight Gain mod](https://www.deviantart.com/coldsteelj/art/Fallout-4-WeightGain-mod-ssbbw-730902010)
@@ -9,13 +9,15 @@ Inspired by:
 Fallout Vore 3.0 is very hard to install, buggy, and hasn't been updated in some time. Its features are extensive, complicated, and difficult to comprehend in the code. It also conflicts with Coldsteel's weight gain mod, since both mods fight over the same sliders. This is a reimplementation with the goal of being simple, easy to install, and easy to maintain.
 
 ## Goal
-An easy, simple mod in which you can eat the bounty of the wasteland, and get fat.
+A simple mod in which your relationship with food is a key element of the gameplay. 
 
-Make consumption more interesting, with real gameplay impact and fun features. You now have limits on how much food you can eat, and eating lots of food (as you are force to do early game) will make you fat, and being fat has upsides and downsides. Consumption has RPG elements, benefitting from your S.P.E.C.I.A.L. stats, and offering temporary boosts as well. Your stats will affect how your body shapes up.
+To eat is to exist. In this harsh and radioactive environment your body has undergone a change, and your appetite grown. You find that when you eat, you grow stronger, and larger. Your power waxes and wanes in seasons, sometimes you are slower and hardier, sometimes faster and leaner. You learn to ride these waves and survive.
+
+This mod attempts to make consumption more interesting, with real gameplay impact and fun features. You now have limits on how much food you can eat, and eating lots of food (as you are forced to do early game) will make you fat, and being fat has upsides and downsides. Consumption has RPG elements, benefitting from your S.P.E.C.I.A.L. stats, and offering temporary boosts as well. Your stats will affect how your body shapes up.
 
 Limits spice up gameplay, making stimpaks and other non-fattening health items more precious. Pushing beyond your limits is a fun way to earn boons.
 
-Time is fun. Beds and sleeping have an actual purpose other than advancing the clock; you metabolize 2x faster while sleeping or resting. Otherwise, you cannot simply pound 10 molerat kebabs while ducking and covering, then pound 10 more 2 minutes later. If you eat yourself into immobility, you'll have to suffer the consequences, or find a clever way out of them.
+Time is fun. Too fat to walk? Digest while you sleep. Otherwise, you cannot simply pound 10 molerat kebabs while ducking and covering, then pound 10 more 2 minutes later. If you eat yourself into immobility, you'll have to suffer the consequences, or find a clever way out of them.
 
 ## Not Included
 Frankly, I think most of this stuff should be scoped to companion mods. A great deal of the excessive complexity of both of the inspiration mods is their everything-but-the-kitchen-sink approach. 
@@ -26,7 +28,7 @@ Frankly, I think most of this stuff should be scoped to companion mods. A great 
 * UI widgets
 * Configurability
 * Companion stuff
-* Sound Effects
+* Sound Effects (maybe)
 * Non-lethal swallow
 * Being a victim of NPC vore
 
@@ -39,13 +41,13 @@ Frankly, I think most of this stuff should be scoped to companion mods. A great 
 - [x] Digestion to calories - Calories are distributed over the weight gain simulation.
 - [x] Accelerate metabolism while sleeping
 - [x] Belly limit. Overeating damages you, levels up capacity
-- [ ] Fatness grants damage reduction
-- [ ] Fatness makes you slower
+- [x] Fatness grants damage reduction
+- [x] Fatness makes you slower
 - [x] Metabolizing fat grants temporary health regeneration
 - [x] Weight Gain: Distribute calories to breasts
 - [x] Weight Gain: Distribute calories to butt
-- [x] Strength: More damage from stomach acid. More muscle growth.
-- [x] Perception: Digest faster and have higher regeneration
+- [ ] Strength: More damage from stomach acid. Able to swallow prey at higher health percentage
+- [ ] Perception: Digest faster and have higher regeneration
 - [x] Endurance: More belly capacity
 - [x] Charisma: Bigger butt
 - [x] Intelligence: Bigger breasts
@@ -61,15 +63,7 @@ Frankly, I think most of this stuff should be scoped to companion mods. A great 
 - [x] Vore: A 'devour' weapon allows voring NPCs.
 - [x] Vore: NPCs go to a 'belly' room where they can damage you, and take damage from your stomach acid.
 - [x] Vore: Digesting vore prey transitions smoothly from the lumpy belly to the round belly.
-- [ ] Belly Inventory: System keeps track of what you're digesting, dropped items.
-- [ ] Vomit belly inventory: Use a consumable to vomit up a container with all the enemies' loot.
+- [x] Belly Inventory: System keeps track of what you're digesting, dropped items.
+- [ ] Fast Travel elapsed time is taken into account for digestion/metabolism.
 
 ## Vore notes
-
-Intelligence and Charisma should be dependent on your actual fatness, rather than the reverse.
-
-What this means is that perk progress will not directly lead to gaining perks. Instead, the perk tells the core what the maximum top/bottom fat value is.
-
-The perk will also receive a custom event for body shape updates and use that to apply the perks.
-
-So, the top/bottom heaviness is based not on the charisma score, but the perk progress. No matter your base charisma score you can't get top heavy until you eat a lot of sweets.

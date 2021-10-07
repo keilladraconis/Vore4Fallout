@@ -2,7 +2,7 @@ Scriptname V4F_RestoreHealthFood extends activemagiceffect
 
 V4F_VoreCore Property VoreCore Auto Const Mandatory
 
-int version = 0
+int version = 3
 float consumeVolume =  0.0016
 
 event OnEffectStart(Actor akTarget, Actor akCaster)
