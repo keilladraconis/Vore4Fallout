@@ -6,6 +6,14 @@ Perk Property V4F_Agility3 Auto Const
 Perk Property V4F_Agility4 Auto Const
 Perk Property V4F_Agility5 Auto Const
 
+; Timer hacks
+bool timersInitialized
+int RealTimerID_HackClockSyncer = 5 const
+int TIMER_main = 1 const
+int TIMER_cooldown = 2 const
+float HackClockLowestTime
+float GameTimeElapsed
+
 float PerkProgress = 0.0
 float previousTime
 
@@ -33,17 +41,15 @@ ActorValue AgilityAV
 
 ; Called when the quest initializes
 Event OnInit()
-    StartTimer(3600.0, 1)
-    StartTimer(60.0, 10)
     Player = Game.GetPlayer()
     AgilityAV = Game.GetAgilityAV()
-    Self.RegisterForPlayerSleep()
-    Self.RegisterForPlayerWait()
-    Self.RegisterForPlayerTeleport()
-    previousTime = Utility.GetCurrentGameTime()
     RegisterForRemoteEvent(Player, "OnPlayerLoadGame")
     RegisterForRemoteEvent(Player, "OnDifficultyChanged")
     UpdateDifficultyScaling(Game.GetDifficulty())
+    ; HACK! The game clock gets adjusted early game to set lighting and such.
+    ; This will fix out clocks from getting out of alignment on new game start.
+    timersInitialized = false
+    StartTimer(1.0, RealTimerID_HackClockSyncer)
 EndEvent
 
 float difficultyScaling
@@ -62,40 +68,32 @@ endfunction
 ; ======
 ; EVENTS
 ; ======
-Event OnPlayerSleepStart(float afSleepStartTime, float afDesiredSleepEndTime, ObjectReference akBed)
-    previousTime = afSleepStartTime
-EndEvent
-
-Event OnPlayerWaitStart(float afWaitStartTime, float afDesiredWaitEndTime)
-    previousTime = afWaitStartTime
-EndEvent
-
-Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
-    HandleTimeSkip()
-EndEvent
-
-Event OnPlayerWaitStop(bool abInterrupted)
-    HandleTimeSkip()
-EndEvent
-
-Event OnPlayerTeleport()
-    HandleTimeSkip()
-EndEvent
-
-function HandleTimeSkip()
-    ; Time is reported as a floating point number where 1 is a whole day. 1 hour is 1/24 expressed as a decimal. (1.0 / 24.0) * 60 * 60 = 150
-    float timeDelta = (Utility.GetCurrentGameTime() - previousTime) / (1.0 / 24.0) * 60 * 60
-    previousTime = Utility.GetCurrentGameTime()
-    PerkDecay(timeDelta / 3600.0)
-endfunction
-
 Event OnTimer(int timer)
-    if timer == 1
-        PerkDecay(1.0)
-        StartTimer(3600.0, 1)
-    else
-        previousTime = Utility.GetCurrentGameTime()
-        StartTimer(60.0, 10)
+    if timer == RealTimerID_HackClockSyncer
+        float currentGameTime = Utility.GetCurrentGameTime()
+        if !timersInitialized || currentGameTime < HackClockLowestTime
+            GameTimeElapsed = currentGameTime
+            HackClockLowestTime = currentGameTime
+            StartTimerGameTime(10.0/60.0, 1)
+            timersInitialized = true
+        endif
+        
+        if currentGameTime <= HackClockLowestTime + 0.05
+            StartTimer(30.0, RealTimerID_HackClockSyncer)
+            Debug.Trace("EnduranceQ Clock Sync @ " + currentGameTime + " # " + HackClockLowestTime)
+        endif
+    endif
+EndEvent
+
+Event OnTimerGameTime(int timer)
+    if timer == TIMER_main
+        ; Time is reported as a floating point number where 1 is a whole day. 1 hour is 1/24 expressed as a decimal. (1.0 / 24.0) * 60 * 60 = 150
+        float timeDelta = (Utility.GetCurrentGameTime() - GameTimeElapsed) / (1.0 / 24.0) * 60 * 60
+        GameTimeElapsed = Utility.GetCurrentGameTime()
+        PerkDecay(timeDelta / 3600.0)
+        StartTimerGameTime(10.0/60.0, 1)
+    elseif timer == TIMER_cooldown
+        GotoState("")
     endif
 endevent
 
@@ -109,10 +107,18 @@ float function ComputeMetabolicRate(float time)
 endfunction
 
 function Increment()
+    GotoState("Cooldown")
     PerkProgress += PerkRate * difficultyScaling
     ApplyPerks()
     Debug.Trace("AgilityQ +:" + PerkProgress)
+    StartTimerGameTime(1.0, TIMER_cooldown)
 endfunction
+
+state Cooldown
+    function Increment()
+        Debug.Trace("AgilityQ Cooldown")
+    endfunction
+endstate
 
 ; ========
 ; Private

@@ -47,10 +47,14 @@ struct Body
     float buttRound = 0.0
 endstruct
 
-float previousTime
+; Timer hacks
+bool timersInitialized
+int RealTimerID_HackClockSyncer = 5 const
+int TIMER_main = 1 const
+float HackClockLowestTime
+float GameTimeElapsed
 
 float calorieDensity = 144000.0 ; If the full belly is 1.25 feet in radius, 8 cubic feet, or 60 gallons, then at 2400 calories per gallon a full belly of milk would be 144000 calories.
-float digestionRate = 0.000017 ; Approximately 50% of the vore prey belly is digested per 8 hours. This is the per-second rate.
 
 ; This is used for updating script-level variables. To invoke this, also update the OnPlayerLoadGame event to bump the version
 int version = 1
@@ -104,55 +108,50 @@ Event OnInit()
     Player = Game.GetPlayer()
     StrengthAV = Game.GetStrengthAV()
     HealthAV = Game.GetHealthAV()
-    Self.RegisterForPlayerSleep()
-    Self.RegisterForPlayerWait()
-    Self.RegisterForPlayerTeleport()
-    previousTime = Utility.GetCurrentGameTime()
+    RegisterForPlayerTeleport()
     RegisterForRemoteEvent(Player, "OnPlayerLoadGame")
     RegisterForRemoteEvent(Player, "OnDifficultyChanged")
     UpdateDifficultyScaling(Game.GetDifficulty())
 
-    EnsureSwallowItem()
-    StartTimer(60.0, 1)
+    EnsureSwallowItem()    
+    ; HACK! The game clock gets adjusted early game to set lighting and such.
+    ; This will fix out clocks from getting out of alignment on new game start.
+    timersInitialized = false
+    StartTimer(1.0, RealTimerID_HackClockSyncer)
 EndEvent
 
 ; ======
 ; EVENTS
 ; ======
-Event OnPlayerSleepStart(float afSleepStartTime, float afDesiredSleepEndTime, ObjectReference akBed)
-    previousTime = afSleepStartTime
-EndEvent
-
-Event OnPlayerWaitStart(float afWaitStartTime, float afDesiredWaitEndTime)
-    previousTime = afWaitStartTime
-EndEvent
-
-Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
-    HandleTimeSkip()
-EndEvent
-
-Event OnPlayerWaitStop(bool abInterrupted)
-    HandleTimeSkip()
-EndEvent
-
 Event OnPlayerTeleport()
-    HandleTimeSkip()
+    EnsureSwallowItem()
 EndEvent
-
-function HandleTimeSkip()
-    ; Time is reported as a floating point number where 1 is a whole day. 1 hour is 1/24 expressed as a decimal. (1.0 / 24.0) * 60 * 60 = 150
-    float timeDelta = (Utility.GetCurrentGameTime() - previousTime) / (1.0 / 24.0) * 60 * 60
-    previousTime = Utility.GetCurrentGameTime()
-    Update(timeDelta)
-endfunction
 
 Event OnTimer(int timer)
-    if timer == 1
-        previousTime = Utility.GetCurrentGameTime()
-        Update(60.0)
-        StartTimer(60.0, 1)
-    elseif timer == 70
-        ProcessVore(10.0)
+    if timer == RealTimerID_HackClockSyncer
+        float currentGameTime = Utility.GetCurrentGameTime()
+        if !timersInitialized || currentGameTime < HackClockLowestTime
+            GameTimeElapsed = currentGameTime
+            HackClockLowestTime = currentGameTime
+            StartTimerGameTime(10.0/60.0, 1)
+            timersInitialized = true
+        endif
+        
+        if currentGameTime <= HackClockLowestTime + 0.05
+            StartTimer(30.0, RealTimerID_HackClockSyncer)
+            Debug.Trace("EnduranceQ Clock Sync @ " + currentGameTime + " # " + HackClockLowestTime)
+        endif
+    endif
+EndEvent
+
+Event OnTimerGameTime(int timer)
+    if timer == TIMER_main
+        ; Time is reported as a floating point number where 1 is a whole day. 1 hour is 1/24 expressed as a decimal. (1.0 / 24.0) * 60 * 60 = 150
+        float timeDelta = (Utility.GetCurrentGameTime() - GameTimeElapsed) / (1.0 / 24.0) * 60 * 60
+        GameTimeElapsed = Utility.GetCurrentGameTime()
+        Update(timeDelta)
+        ProcessVore(timeDelta)
+        StartTimerGameTime(10.0/60.0, 1)
     endif
 endevent
 
@@ -550,7 +549,7 @@ function EnsureSwallowItem()
             swallows -= 1.0
         endwhile
     else
-        Player.AddItem(V4F_Swallow)
+        Player.EquipItem(V4F_Swallow, false, true)
     endif
 endfunction
 

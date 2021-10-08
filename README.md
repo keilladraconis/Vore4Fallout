@@ -67,3 +67,5 @@ Frankly, I think most of this stuff should be scoped to companion mods. A great 
 - [ ] Fast Travel elapsed time is taken into account for digestion/metabolism.
 
 ## Vore notes
+
+There is a bug with Galaxy Gut 4, where for some reason the benefit disappears.

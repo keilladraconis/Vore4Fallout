@@ -16,22 +16,13 @@ Actor Player
 
 ; Called when the quest initializes
 Event OnInit()
-    Setup()
-EndEvent
-
-function Setup()
     Player = Game.GetPlayer()
-    RegisterForRemoteEvent(Game.GetPlayer(), "OnPlayerLoadGame")
     RegisterForCustomEvent(VoreCore, "BodyMassEvent")
-endfunction
+EndEvent
 
 ; ======
 ; EVENTS
 ; ======
-Event Actor.OnPlayerLoadGame(Actor akSender)
-	; Setup()
-EndEvent
-
 Event V4F_VoreCore.BodyMassEvent(V4F_VoreCore sender, Var[] args)
     float burden = args[0] as float
     ApplyPerks(burden)
