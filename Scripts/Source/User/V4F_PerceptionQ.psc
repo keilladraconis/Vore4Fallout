@@ -17,16 +17,16 @@ float GameTimeElapsed
 float PerkProgress = 0.0
 
 float healthRestore = 0.001 ; 1 hp per 1000 calories 
-float digestionRate = 0.000017
+float digestionRate = 0.000044
 
 float PerkDecay = 0.1
 float PerkRate = 0.2
-int version = 1
+int version = 3
 ; This is used for updating script-level variables. To invoke this, also update the OnPlayerLoadGame event to bump the version
 function Updateversion(int v)
     if v > version
         healthRestore = 0.001
-        digestionRate = 0.000017
+        digestionRate = 0.00044
         PerkDecay = 0.1
         PerkRate = 0.2
         version = v
@@ -34,7 +34,7 @@ function Updateversion(int v)
 endfunction
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
-	Updateversion(1)
+	Updateversion(3)
 EndEvent
 
 Actor Player
@@ -79,7 +79,7 @@ Event OnTimer(int timer)
         
         if currentGameTime <= HackClockLowestTime + 0.05
             StartTimer(30.0, RealTimerID_HackClockSyncer)
-            Debug.Trace("EnduranceQ Clock Sync @ " + currentGameTime + " # " + HackClockLowestTime)
+            Debug.Trace("PerceptionQ Clock Sync @ " + currentGameTime + " # " + HackClockLowestTime)
         endif
     endif
 EndEvent

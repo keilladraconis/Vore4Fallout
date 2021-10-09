@@ -139,7 +139,7 @@ Event OnTimer(int timer)
         
         if currentGameTime <= HackClockLowestTime + 0.05
             StartTimer(30.0, RealTimerID_HackClockSyncer)
-            Debug.Trace("EnduranceQ Clock Sync @ " + currentGameTime + " # " + HackClockLowestTime)
+            Debug.Trace("VoreCore Clock Sync @ " + currentGameTime + " # " + HackClockLowestTime)
         endif
     endif
 EndEvent
@@ -178,6 +178,7 @@ function AddFood(float amount, activemagiceffect foodEffect)
         If foodeffect != NONE
             foodeffect.Dispel()
         EndIf
+        Debug.Trace("OverEat: " + Math.Min(25, excess * 100) + " max: " + maxBelly + " total " + BellyTotal())
         Player.DamageValue(HealthAV, Math.Min(25, excess * 100)) ; In case of warp, don't just die instantly.
         EnduranceQ.StomachStrain(BellyTotal())
         Debug.Notification("You have no room in your stomach!")

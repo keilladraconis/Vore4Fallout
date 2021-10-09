@@ -75,7 +75,7 @@ Event OnTimer(int timer)
         
         if currentGameTime <= HackClockLowestTime + 0.05
             StartTimer(30.0, RealTimerID_HackClockSyncer)
-            Debug.Trace("EnduranceQ Clock Sync @ " + currentGameTime + " # " + HackClockLowestTime)
+            Debug.Trace("IntelligenceQ Clock Sync @ " + currentGameTime + " # " + HackClockLowestTime)
         endif
     endif
 EndEvent
