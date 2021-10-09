@@ -18,21 +18,21 @@ float PerkProgress = 0.0
 float previousTime
 
 float metabolicRate = -0.0289 ; Assuming 2500 calories per day.
-float PerkDecay = 0.1
+float PerkDecay = 0.05
 float PerkRate = 0.2
-int version = 1
+int version
 ; This is used for updating script-level variables. To invoke this, also update the OnPlayerLoadGame event to bump the version
 function Updateversion(int v)
     if v > version
         metabolicRate = -0.0289
-        PerkDecay = 0.1
+        PerkDecay = 0.05
         PerkRate = 0.2
         version = v
     endif
 endfunction
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
-	Updateversion(1)
+	Updateversion(2)
 EndEvent
 
 Actor Player
@@ -43,6 +43,7 @@ ActorValue AgilityAV
 Event OnInit()
     Player = Game.GetPlayer()
     AgilityAV = Game.GetAgilityAV()
+    RegisterForPlayerTeleport()
     RegisterForRemoteEvent(Player, "OnPlayerLoadGame")
     RegisterForRemoteEvent(Player, "OnDifficultyChanged")
     UpdateDifficultyScaling(Game.GetDifficulty())
@@ -96,6 +97,14 @@ Event OnTimerGameTime(int timer)
         GotoState("")
     endif
 endevent
+
+Event OnPlayerTeleport()
+    float timeDelta = (Utility.GetCurrentGameTime() - GameTimeElapsed) / (1.0 / 24.0) * 60 * 60
+    Debug.Trace("AgilityQ: Teleport TimeDelta: " + timeDelta)
+    if timeDelta > 3600.0
+        Increment()
+    endif
+EndEvent
 
 ; ========
 ; Public

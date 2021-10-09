@@ -480,6 +480,7 @@ endfunction
 
 ; Metabolism
 Function Metabolize(float calories)
+    Debug.Trace("Metabolize: " + calories)
     If calories > 0
         float topCalories = MetabolizeTop(calories / 2.0)
         calories = MetabolizeBottom((calories / 2.0) + topCalories)

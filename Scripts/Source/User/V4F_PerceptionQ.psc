@@ -19,7 +19,7 @@ float PerkProgress = 0.0
 float healthRestore = 0.001 ; 1 hp per 1000 calories 
 float digestionRate = 0.000044
 
-float PerkDecay = 0.1
+float PerkDecay = 0.05
 float PerkRate = 0.2
 int version = 3
 ; This is used for updating script-level variables. To invoke this, also update the OnPlayerLoadGame event to bump the version
