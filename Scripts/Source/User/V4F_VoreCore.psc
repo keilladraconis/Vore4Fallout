@@ -253,6 +253,7 @@ endfunction
 function Update(float time, bool digest = true)
     if digest
         float calories = Digest(time)
+        Debug.Trace("Metabolic Rate:" + AgilityQ.ComputeMetabolicRate(time) + " per:" + time)
         Metabolize(calories + AgilityQ.ComputeMetabolicRate(time)) ; Represents the base metabolic rate of the player. Burn calories.      
     endif
     if isProcessingVore
@@ -268,7 +269,7 @@ endfunction
 
 function SendBodyMassEvent()
     Var[] args = new Var[1]
-    args[0] = PlayerVore.prey + (PlayerVore.food / 4.0) + (PlayerVore.fat / 5.0)
+    args[0] = PlayerVore.prey + (PlayerVore.food / 4.0) + (PlayerVore.fat)
     SendCustomEvent("BodyMassEvent", args)
 endfunction
 
@@ -294,7 +295,6 @@ float function Digest(float time)
     ; This helps with digesting prey, so that you don't spend a whole 8 hours simply digesting only prey, but 
     ; each loop you digest prey, then prey + food, etc.
     while digestActual > 0.0 && (PlayerVore.prey > 0.0 || PlayerVore.food > 0.0)
-        Debug.Trace("WhileDigesting:" + PlayerVore)
         digestActual -= 0.01
         if digestActual < 0.0
             digestStep = Math.abs(digestActual)
@@ -482,12 +482,18 @@ endfunction
 Function Metabolize(float calories)
     Debug.Trace("Metabolize: " + calories)
     If calories > 0
+        Debug.Trace("Gaining...")
         float topCalories = MetabolizeTop(calories / 2.0)
         calories = MetabolizeBottom((calories / 2.0) + topCalories)
         calories = MetabolizeRest(calories)
     Elseif PlayerVore.fat > 0.0 || PlayerVore.topFat > 0.0 || PlayerVore.bottomFat > 0.0
+        Debug.Trace("Losing...")
         Player.RestoreValue(HealthAV, -calories * PerceptionQ.DigestHealthRestore()) ; Heal slowly when burning fat
         calories = MetabolizeRest(calories)
+        Debug.Trace("Leftover Rest:" + calories)
+        if calories == 0.0
+            return ; Stop processing if we have burned all calories as fat.
+        endif
         float bottomCalories = MetabolizeBottom(calories / 2.0)
         calories = MetabolizeTop((calories / 2.0) + bottomCalories)
     else
@@ -512,7 +518,7 @@ EndFunction
 float Function MetabolizeTop(float calories)
     PlayerVore.topFat += (calories / 3500) * 0.025
 
-    If PlayerVore.topFat > BreastMax
+    If calories > 0 && PlayerVore.topFat > BreastMax
         float excess = PlayerVore.topFat - BreastMax
         PlayerVore.topFat = BreastMax
         return excess * 40 * 3500
@@ -528,7 +534,7 @@ EndFunction
 float Function MetabolizeBottom(float calories)
     PlayerVore.bottomFat += (calories / 3500) * 0.01
 
-    If PlayerVore.bottomFat > ButtMax
+    If calories > 0 && PlayerVore.bottomFat > ButtMax
         float excess = PlayerVore.bottomFat - ButtMax
         PlayerVore.bottomFat = ButtMax
         return excess * 100 * 3500

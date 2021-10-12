@@ -68,4 +68,7 @@ Frankly, I think most of this stuff should be scoped to companion mods. A great 
 
 ## Vore notes
 
-There is a bug with Galaxy Gut 4, where for some reason the benefit disappears.
+It seems like the fat loss is happening wrong, where the breasts/butt get preferentially diminished. Need to test more.
+Also, perhaps the perk degradation is also way too fast. And most perks should let you over-stack so that you don't immediately fall off of 5* on the first tick down.
+
+Finally, need to ensure that if I run back and forth between two locations, I experience proper perk adjustment, such as earning a lot of agility perk for fast travel.

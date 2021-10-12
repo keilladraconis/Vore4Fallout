@@ -21,7 +21,7 @@ float digestionRate = 0.000044
 
 float PerkDecay = 0.05
 float PerkRate = 0.2
-int version = 3
+int version = 0
 ; This is used for updating script-level variables. To invoke this, also update the OnPlayerLoadGame event to bump the version
 function Updateversion(int v)
     if v > version
@@ -29,15 +29,17 @@ function Updateversion(int v)
         digestionRate = 0.00044
         PerkDecay = 0.1
         PerkRate = 0.2
+        PerceptionAV = Game.GetPerceptionAV()
         version = v
     endif
 endfunction
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
-	Updateversion(3)
+	Updateversion(4)
 EndEvent
 
 Actor Player
+ActorValue PerceptionAV
 
 ; Called when the quest initializes
 Event OnInit()
@@ -116,7 +118,7 @@ state Cooldown
 endstate
 
 float function ComputeDigestion(float time)
-    return time * digestionRate * difficultyScaling
+    return time * digestionRate * (1 + Player.GetValue(PerceptionAV)) * difficultyScaling
 endfunction
 
 float function DigestHealthRestore()

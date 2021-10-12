@@ -5,6 +5,11 @@ Perk Property V4F_Agility2 Auto Const
 Perk Property V4F_Agility3 Auto Const
 Perk Property V4F_Agility4 Auto Const
 Perk Property V4F_Agility5 Auto Const
+Perk Property V4F_VoreBurden1 Auto Const
+Perk Property V4F_VoreBurden2 Auto Const
+Perk Property V4F_VoreBurden3 Auto Const
+Perk Property V4F_VoreBurden4 Auto Const
+Perk Property V4F_VoreBurden5 Auto Const
 
 ; Timer hacks
 bool timersInitialized
@@ -91,6 +96,7 @@ Event OnTimerGameTime(int timer)
         ; Time is reported as a floating point number where 1 is a whole day. 1 hour is 1/24 expressed as a decimal. (1.0 / 24.0) * 60 * 60 = 150
         float timeDelta = (Utility.GetCurrentGameTime() - GameTimeElapsed) / (1.0 / 24.0) * 60 * 60
         GameTimeElapsed = Utility.GetCurrentGameTime()
+
         PerkDecay(timeDelta / 3600.0)
         StartTimerGameTime(10.0/60.0, 1)
     elseif timer == TIMER_cooldown
@@ -102,7 +108,8 @@ Event OnPlayerTeleport()
     float timeDelta = (Utility.GetCurrentGameTime() - GameTimeElapsed) / (1.0 / 24.0) * 60 * 60
     Debug.Trace("AgilityQ: Teleport TimeDelta: " + timeDelta)
     if timeDelta > 3600.0
-        Increment()
+        GotoState("")
+        Increment(timeDelta / 3600.0)
     endif
 EndEvent
 
@@ -112,19 +119,32 @@ EndEvent
 
 float function ComputeMetabolicRate(float time)
     float agilityBonus = Player.GetValue(AgilityAV) / 4.0
-    return metabolicRate * time * agilityBonus * PerkProgress * difficultyScaling
+    Debug.Trace("MBR: " + metabolicRate + " t: " + time + " ag: " + agilityBonus + " pp: " + PerkProgress + " ds: " + difficultyScaling)
+    return metabolicRate * time * agilityBonus * (1 + PerkProgress) * difficultyScaling
 endfunction
 
-function Increment()
+function Increment(float amount = 1.0)
     GotoState("Cooldown")
-    PerkProgress += PerkRate * difficultyScaling
+    float burdenBonus = 1.0
+    if Player.HasPerk(V4F_VoreBurden1)
+        burdenBonus = 1.2
+    ElseIf Player.HasPerk(V4F_VoreBurden2)
+        burdenBonus = 1.4
+    ElseIf Player.HasPerk(V4F_VoreBurden3)
+        burdenBonus = 1.8
+    ElseIf Player.HasPerk(V4F_VoreBurden4)
+        burdenBonus = 2.0
+    ElseIf Player.HasPerk(V4F_VoreBurden5)
+        burdenBonus = 3.0
+    endif
+    PerkProgress += PerkRate * amount * burdenBonus * difficultyScaling
     ApplyPerks()
     Debug.Trace("AgilityQ +:" + PerkProgress)
     StartTimerGameTime(1.0, TIMER_cooldown)
 endfunction
 
 state Cooldown
-    function Increment()
+    function Increment(float amount = 1.0)
         Debug.Trace("AgilityQ Cooldown")
     endfunction
 endstate

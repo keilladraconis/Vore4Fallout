@@ -103,8 +103,8 @@ EndEvent
 
 function Increment()
     PerkProgress += PerkRate * difficultyScaling
-    if PerkProgress > 1.0
-        PerkProgress = 1.0
+    if PerkProgress > 2.0
+        PerkProgress = 2.0
     endif
     VoreCore.ButtMax = PerkProgress
     Debug.Trace("CharismaQ +:" + PerkProgress)
