@@ -45,6 +45,8 @@ struct Body
     float buttCWaist = 0.0
     float buttApple = 0.0
     float buttRound = 0.0
+    float UKTop = 0.0
+    float UKBottom = 0.0
 endstruct
 
 ; Timer hacks
@@ -61,13 +63,37 @@ int version = 1
 function Updateversion(int v)
     if v < version
         calorieDensity = 144000.0
+        Body oldBody = PlayerBody
+        pPlayerBody = new Body
+        pPlayerBody.vorePreyBelly = oldBody.vorePreyBelly
+        pPlayerBody.bbw = oldBody.bbw
+        pPlayerBody.giantBellyUp = oldBody.giantBellyUp
+        pPlayerBody.bigBelly = oldBody.bigBelly
+        pPlayerBody.tummyTuck = oldBody.tummyTuck
+        pPlayerBody.pregnancyBelly = oldBody.pregnancyBelly
+        pPlayerBody.giantBelly = oldBody.giantBelly
+        pPlayerBody.breasts = oldBody.breasts
+        pPlayerBody.breastsH = oldBody.breastsH
+        pPlayerBody.breastsT = oldBody.breastsT
+        pPlayerBody.breastsD = oldBody.breastsD
+        pPlayerBody.breastsF = oldBody.breastsF
+        pPlayerBody.butt = oldBody.butt
+        pPlayerBody.buttChubby = oldBody.buttChubby
+        pPlayerBody.buttThighs = oldBody.buttThighs
+        pPlayerBody.buttWaist = oldBody.buttWaist
+        pPlayerBody.buttBack = oldBody.buttBack
+        pPlayerBody.buttBig = oldBody.buttBig
+        pPlayerBody.buttCLegs = oldBody.buttCLegs
+        pPlayerBody.buttCWaist = oldBody.buttCWaist
+        pPlayerBody.buttApple = oldBody.buttApple
+        pPlayerBody.buttRound = oldBody.buttRound
         version = v
     endif
 endfunction
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
     EnsureSwallowItem()
-    Updateversion(1)
+    Updateversion(2)
 EndEvent
 
 float property BreastMax = 0.0 Auto
@@ -374,24 +400,35 @@ function UpdateBody()
         PlayerBody.breastsT   = 0.0
         PlayerBody.breastsD   = 0.0
         PlayerBody.breastsF   = 0.0
+        PlayerBody.UKTop      = 0.0
     elseif PlayerVore.topFat > 0.25 && PlayerVore.topFat <= 0.5
         PlayerBody.breasts    = 1.0
         PlayerBody.breastsH   = (PlayerVore.topFat - 0.25) / 0.25
         PlayerBody.breastsT   = (PlayerVore.topFat - 0.25) / 0.25
         PlayerBody.breastsD   = 0.0
         PlayerBody.breastsF   = 0.0
+        PlayerBody.UKTop      = 0.0
     elseif PlayerVore.topFat > 0.5 && PlayerVore.topFat <= 0.75
         PlayerBody.breasts    = 1.0
         PlayerBody.breastsH   = 1.0
         PlayerBody.breastsT   = 1 - ((PlayerVore.topFat - 0.5) * 4)
         PlayerBody.breastsD   = (PlayerVore.topFat - 0.5) / 0.25
         PlayerBody.breastsF   = 0.0
-    elseif PlayerVore.topFat > 0.75
+        PlayerBody.UKTop      = 0.0
+    elseif PlayerVore.topFat > 0.75 && PlayerVore.topFat <= 1.0
         PlayerBody.breasts    = 1.0
         PlayerBody.breastsH   = 1.0
         PlayerBody.breastsT   = 0.0
         PlayerBody.breastsD   = 1.0
         PlayerBody.breastsF   = (PlayerVore.topFat - 0.75) / 0.25
+        PlayerBody.UKTop      = 0.0
+    elseif PlayerVore.topFat > 1.0
+        PlayerBody.breasts    = 1.0 - (PlayerVore.topFat - 1.0)
+        PlayerBody.breastsH   = 1.0 - (PlayerVore.topFat - 1.0)
+        PlayerBody.breastsT   = 0.0
+        PlayerBody.breastsD   = 1.0 - (PlayerVore.topFat - 1.0)
+        PlayerBody.breastsF   = 1.0 - (PlayerVore.topFat - 1.0)
+        PlayerBody.UKTop = (PlayerVore.topFat - 1.0) / 4.0
     endif
 
     if PlayerVore.bottomFat >= 0.0 && PlayerVore.bottomFat <= 0.1
@@ -405,6 +442,7 @@ function UpdateBody()
         PlayerBody.buttCWaist = 0.0
         PlayerBody.buttApple  = 0.0
         PlayerBody.buttRound  = 0.0
+        PlayerBody.UKBottom   = 0.0
     elseif PlayerVore.bottomfat > 0.1 && PlayerVore.bottomFat <= 0.2
         PlayerBody.butt       = 1.0
         PlayerBody.buttChubby = (PlayerVore.bottomfat - 0.1) / 0.1
@@ -416,6 +454,7 @@ function UpdateBody()
         PlayerBody.buttCWaist = 0.0
         PlayerBody.buttApple  = 0.0
         PlayerBody.buttRound  = 0.0
+        PlayerBody.UKBottom   = 0.0
     elseif PlayerVore.bottomfat > 0.2 && PlayerVore.bottomFat <= 0.6
         PlayerBody.butt       = 1.0
         PlayerBody.buttChubby = 1.0
@@ -427,6 +466,7 @@ function UpdateBody()
         PlayerBody.buttCWaist = (PlayerVore.bottomfat - 0.2) / 0.4
         PlayerBody.buttApple  = 0.0
         PlayerBody.buttRound  = 0.0
+        PlayerBody.UKBottom   = 0.0
     elseif PlayerVore.bottomfat > 0.6 && PlayerVore.bottomFat <= 0.9
         PlayerBody.butt       = 1.0
         PlayerBody.buttChubby = 1.0
@@ -436,9 +476,10 @@ function UpdateBody()
         PlayerBody.buttBack   = 1.0
         PlayerBody.buttCLegs  = 1.0
         PlayerBody.buttCWaist = 1.0
-        PlayerBody.buttApple  = 2 * ((PlayerVore.bottomfat - 0.2) / 0.4) 
+        PlayerBody.buttApple  = ((PlayerVore.bottomfat - 0.2) / 0.4) 
         PlayerBody.buttRound  = 0.0
-    elseif PlayerVore.bottomfat > 0.9
+        PlayerBody.UKBottom   = 0.0
+    elseif PlayerVore.bottomfat > 0.9 && PlayerVore.bottomFat <= 1.0
         PlayerBody.butt       = 1.0
         PlayerBody.buttChubby = 1.0
         PlayerBody.buttThighs = 1.0
@@ -447,8 +488,21 @@ function UpdateBody()
         PlayerBody.buttBack   = 1.0
         PlayerBody.buttCLegs  = 1.0
         PlayerBody.buttCWaist = 1.0
-        PlayerBody.buttApple  = 2.0
+        PlayerBody.buttApple  = 1.0
         PlayerBody.buttRound  = (PlayerVore.bottomfat - 0.9) / 0.1
+        PlayerBody.UKBottom   = 0.0
+    else
+        PlayerBody.butt       = 1.0 - (PlayerVore.bottomFat - 1.0)
+        PlayerBody.buttChubby = 1.0 - (PlayerVore.bottomFat - 1.0)
+        PlayerBody.buttThighs = 1.0 - (PlayerVore.bottomFat - 1.0)
+        PlayerBody.buttWaist  = 1.0 - (PlayerVore.bottomFat - 1.0)
+        PlayerBody.buttBig    = 1.0 - (PlayerVore.bottomFat - 1.0)
+        PlayerBody.buttBack   = 1.0 - (PlayerVore.bottomFat - 1.0)
+        PlayerBody.buttCLegs  = 1.0 - (PlayerVore.bottomFat - 1.0)
+        PlayerBody.buttCWaist = 1.0 - (PlayerVore.bottomFat - 1.0)
+        PlayerBody.buttApple  = 1.0 - (PlayerVore.bottomFat - 1.0)
+        PlayerBody.buttRound  = 1.0 - (PlayerVore.bottomFat - 1.0)
+        PlayerBody.UKBottom   = (PlayerVore.bottomFat - 1.0) / 4.0
     endif
 endfunction
 
@@ -475,6 +529,7 @@ function MorphBody()
     BodyGen.SetMorph(Player, true, "ChubbyWaist", NONE, PlayerBody.buttCWaist)
     BodyGen.SetMorph(Player, true, "AppleCheeks", NONE, PlayerBody.buttApple)
     BodyGen.SetMorph(Player, true, "RoundAss", NONE, PlayerBody.buttRound)
+    BodyGen.SetMorph(Player, true, "SSBBW UltKir Body", NONE, PlayerBody.UKBottom + PlayerBody.UKTop)
     BodyGen.UpdateMorphs(Player)
 endfunction
 

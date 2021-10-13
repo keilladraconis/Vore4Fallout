@@ -43,37 +43,27 @@ function ApplyPerks(float burden)
     Player.RemovePerk(V4F_VoreBurden3)
     Player.RemovePerk(V4F_VoreBurden4)
     Player.RemovePerk(V4F_VoreBurden5)
-    if burden >= 0.2
-        if !Player.HasPerk(V4F_Agility1)
-            Player.SetValue(SpeedMult, 80)
-        endif
+    if burden >= 0.4
+        Player.SetValue(SpeedMult, 80)
         Player.AddPerk(V4F_VoreBurden1)
     endif
-    if burden >= 0.4
-        if !Player.HasPerk(V4F_Agility2)
-            Player.SetValue(SpeedMult, 60)
-        endif
+    if burden >= 0.6
+        Player.SetValue(SpeedMult, 60)
         
         Player.AddPerk(V4F_VoreBurden2)
     endif
-    if burden >= 0.6
-        if !Player.HasPerk(V4F_Agility3)
-            Player.SetValue(SpeedMult, 30)
-        endif
+    if burden >= 1.0
+        Player.SetValue(SpeedMult, 30)
         
         Player.AddPerk(V4F_VoreBurden3)
     endif
-    if burden >= 0.8
-        if !Player.HasPerk(V4F_Agility4)
-            Player.SetValue(SpeedMult, 10)
-        endif
+    if burden >= 2.0
+        Player.SetValue(SpeedMult, 15)
         
         Player.AddPerk(V4F_VoreBurden4)
     endif
-    if burden >= 1.0
-        if !Player.HasPerk(V4F_Agility5)
-            Player.SetValue(SpeedMult, 5)
-        endif
+    if burden >= 5.0
+        Player.SetValue(SpeedMult, 10)
         Player.AddPerk(V4F_VoreBurden5)
     endif
 endfunction

@@ -5,6 +5,11 @@ Perk Property V4F_Perception2 Auto Const
 Perk Property V4F_Perception3 Auto Const
 Perk Property V4F_Perception4 Auto Const
 Perk Property V4F_Perception5 Auto Const
+Perk Property V4F_VoreBurden1 Auto Const
+Perk Property V4F_VoreBurden2 Auto Const
+Perk Property V4F_VoreBurden3 Auto Const
+Perk Property V4F_VoreBurden4 Auto Const
+Perk Property V4F_VoreBurden5 Auto Const
 
 ; Timer hacks
 bool timersInitialized
@@ -16,18 +21,19 @@ float GameTimeElapsed
 
 float PerkProgress = 0.0
 
-float healthRestore = 0.001 ; 1 hp per 1000 calories 
-float digestionRate = 0.000044
+float healthRestore = 0.005 ; 5 hp per 1000 calories 
+float digestionRate = 0.00011
+float exerciseBoost = 0.0
 
-float PerkDecay = 0.05
+float PerkDecay = 0.001
 float PerkRate = 0.2
 int version = 0
 ; This is used for updating script-level variables. To invoke this, also update the OnPlayerLoadGame event to bump the version
 function Updateversion(int v)
     if v > version
-        healthRestore = 0.001
-        digestionRate = 0.00044
-        PerkDecay = 0.1
+        healthRestore = 0.005
+        digestionRate = 0.00011
+        PerkDecay = 0.001
         PerkRate = 0.2
         PerceptionAV = Game.GetPerceptionAV()
         version = v
@@ -35,7 +41,7 @@ function Updateversion(int v)
 endfunction
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
-	Updateversion(4)
+	Updateversion(8)
 EndEvent
 
 Actor Player
@@ -118,11 +124,31 @@ state Cooldown
 endstate
 
 float function ComputeDigestion(float time)
-    return time * digestionRate * (1 + Player.GetValue(PerceptionAV)) * difficultyScaling
+    Debug.Trace("t: " + time + " dr: " + digestionRate + " pav: " + (1 + Player.GetValue(PerceptionAV) / 4.0) + " ds: " + difficultyScaling + " eb: " + (1 + exerciseBoost))
+    float digestion =  time * digestionRate * (1 + Player.GetValue(PerceptionAV) / 4.0) * difficultyScaling * (1 + exerciseBoost)
+    exerciseBoost = 0.0
+    return digestion
 endfunction
 
 float function DigestHealthRestore()
     return healthRestore * difficultyScaling
+endfunction
+
+function SetExerciseBoost()
+    Debug.Trace("ExerciseBoost")
+    float burdenBonus = 1.0
+    if Player.HasPerk(V4F_VoreBurden1)
+        burdenBonus = 0.2
+    ElseIf Player.HasPerk(V4F_VoreBurden2)
+        burdenBonus = 0.4
+    ElseIf Player.HasPerk(V4F_VoreBurden3)
+        burdenBonus = 0.8
+    ElseIf Player.HasPerk(V4F_VoreBurden4)
+        burdenBonus = 1.0
+    ElseIf Player.HasPerk(V4F_VoreBurden5)
+        burdenBonus = 3.0
+    endif
+    exerciseBoost = burdenBonus
 endfunction
 
 ; ========

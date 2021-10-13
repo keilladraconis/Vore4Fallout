@@ -16,20 +16,20 @@ float GameTimeElapsed
 
 float PerkProgress = 0.0
 
-float PerkDecay = 0.01
+float PerkDecay = 0.001
 float PerkRate = 0.04
 int version
 ; This is used for updating script-level variables. To invoke this, also update the OnPlayerLoadGame event to bump the version
 function Updateversion(int v)
     if v > version
-        PerkDecay = 0.01
+        PerkDecay = 0.001
         PerkRate = 0.04
         version = v
     endif
 endfunction
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
-	Updateversion(3)
+	Updateversion(5)
 EndEvent
 
 Actor Player
