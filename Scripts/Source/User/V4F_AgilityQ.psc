@@ -116,11 +116,11 @@ Event V4F_VoreCore.BodyMassEvent(V4F_VoreCore akSender, Var[] akArgs)
     GotoState("Cooldown")
     float bodyMass = akArgs[0] as float
     if bodyMass <= 1.0
-        PerkProgress -= 1.0 * difficultyScaling
-        if PerkProgress <= 1.0
-            PerkProgress = 0.0
+        PerkRate -= 1.0 * difficultyScaling
+        if PerkRate <= 1.0
+            PerkRate = 0.0
         endif
-        Debug.Trace("Bodymass low, reducing AgilityPerk:" + PerkProgress)
+        Debug.Trace("Bodymass low, reducing AgilityPerk rate:" + PerkRate)
     endif
 EndEvent
 
@@ -149,6 +149,7 @@ function Increment(float amount = 1.0)
         burdenBonus = 3.0
     endif
     PerkRate += amount * burdenBonus * difficultyScaling
+    Debug.Trace("AgilityQ Perkrate:" + PerkRate)
     ApplyPerks()
     StartTimerGameTime(1.0, TIMER_cooldown)
 endfunction

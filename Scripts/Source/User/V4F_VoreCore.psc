@@ -545,7 +545,6 @@ Function Metabolize(float calories)
         Debug.Trace("Losing...")
         Player.RestoreValue(HealthAV, -calories * PerceptionQ.DigestHealthRestore()) ; Heal slowly when burning fat
         calories = MetabolizeRest(calories)
-        Debug.Trace("Leftover Rest:" + calories)
         if calories == 0.0
             return ; Stop processing if we have burned all calories as fat.
         endif

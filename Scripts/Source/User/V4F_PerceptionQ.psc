@@ -119,7 +119,6 @@ endfunction
 
 state Cooldown
     function Increment()
-        Debug.Trace("PerceptionQ Cooldown")
     endfunction
 endstate
 
@@ -135,7 +134,6 @@ float function DigestHealthRestore()
 endfunction
 
 function SetExerciseBoost()
-    Debug.Trace("ExerciseBoost")
     float burdenBonus = 1.0
     if Player.HasPerk(V4F_VoreBurden1)
         burdenBonus = 0.2
