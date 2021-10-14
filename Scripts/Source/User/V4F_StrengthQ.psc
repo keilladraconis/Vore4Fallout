@@ -17,19 +17,20 @@ float GameTimeElapsed
 float PerkProgress = 0.0
 
 float PerkDecay = 0.001
-float PerkRate = 0.2
+float PerkRate = 0.04
 int version
 ; This is used for updating script-level variables. To invoke this, also update the OnPlayerLoadGame event to bump the version
 function Updateversion(int v)
     if v > version
         PerkDecay = 0.001
-        PerkRate = 0.2
+        PerkRate = 0.04
         version = v
     endif
 endfunction
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
-	Updateversion(4)
+	Updateversion(5)
+    GotoState("")
 EndEvent
 
 Actor Player
@@ -41,7 +42,6 @@ Event OnInit()
     StrengthAV = Game.GetStrengthAV()
     RegisterForRemoteEvent(Player, "OnPlayerLoadGame")
     RegisterForRemoteEvent(Player, "OnDifficultyChanged")
-    RegisterForCustomEvent(VoreCore, "VoreEvent")
     UpdateDifficultyScaling(Game.GetDifficulty())
     ; HACK! The game clock gets adjusted early game to set lighting and such.
     ; This will fix out clocks from getting out of alignment on new game start.
@@ -94,9 +94,10 @@ Event OnTimerGameTime(int timer)
     endif
 endevent
 
-Event V4F_VoreCore.VoreEvent(V4F_VoreCore sender, Var[] args)
-    Increment()
-endevent
+Event V4F_VoreCore.BodyShapeEvent(V4F_VoreCore akSender, Var[] args)
+    float muscle = args[3] as float
+    ApplyPerks(muscle)
+EndEvent
 
 ; ========
 ; Public
@@ -107,56 +108,53 @@ float function HealthPctLimit()
 endfunction
 
 function Increment()
-    GotoState("Cooldown")
     PerkProgress += PerkRate * difficultyScaling
-    ApplyPerks()
-    Debug.Trace("StrengthQ +:" + PerkProgress)
-    if PerkProgress > 7.5
-        PerkProgress = 7.5
-    endif
-    StartTimerGameTime(1.0, TIMER_cooldown)
+    UpdatePerkProgress()
 endfunction
-
-state Cooldown
-    function Increment()
-        Debug.Trace("StrengthQ Cooldown")
-    endfunction
-endstate
 
 ; ========
 ; Private
 ; ========
 
-function PerkDecay(float time)
-    if PerkProgress > 0.0
-        PerkProgress -= time * PerkDecay * difficultyScaling
-        if PerkProgress < 0.0
-            PerkProgress = 0.0
-        endif
-        ApplyPerks()
-        Debug.Trace("StrengthQ -:" + PerkProgress)
+function UpdatePerkProgress()
+    if PerkProgress > 2.0
+        PerkProgress = 2.0
+    elseif PerkProgress < 0.0
+        PerkProgress = 0.0
     endif
+
+    if PerkProgress <= 1.0
+        VoreCore.MuscleMax = PerkProgress
+    else
+        VoreCore.MuscleMax = 1.0
+    endif
+    Debug.Trace("StrengthQ:" + PerkProgress)
 endfunction
 
-function ApplyPerks()
+function PerkDecay(float time)
+    PerkProgress -= time * PerkDecay * difficultyScaling
+    UpdatePerkProgress()
+endfunction
+
+function ApplyPerks(float muscle)
     Player.RemovePerk(V4F_Strength1)
     Player.RemovePerk(V4F_Strength2)
     Player.RemovePerk(V4F_Strength3)
     Player.RemovePerk(V4F_Strength4)
     Player.RemovePerk(V4F_Strength5)
-    if PerkProgress >= 1.0
+    if muscle >= 0.2
         Player.AddPerk(V4F_Strength1)
     endif
-    if PerkProgress >= 2.0
+    if muscle >= 0.4
         Player.AddPerk(V4F_Strength2)
     endif
-    if PerkProgress >= 3.0
+    if muscle >= 0.6
         Player.AddPerk(V4F_Strength3)
     endif
-    if PerkProgress >= 4.0
+    if muscle >= 0.8
         Player.AddPerk(V4F_Strength4)
     endif
-    if PerkProgress >= 5.0
+    if muscle >= 1.0
         Player.AddPerk(V4F_Strength5)
     endif
 endfunction

@@ -42,6 +42,7 @@ endfunction
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
 	Updateversion(8)
+    GotoState("")
 EndEvent
 
 Actor Player

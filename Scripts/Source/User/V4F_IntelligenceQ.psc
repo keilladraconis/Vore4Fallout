@@ -30,6 +30,7 @@ endfunction
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
 	Updateversion(5)
+    GotoState("")
 EndEvent
 
 Actor Player
@@ -103,24 +104,31 @@ EndEvent
 
 function Increment()
     PerkProgress += PerkRate * difficultyScaling
-    if PerkProgress > 2.0
-        PerkProgress = 2.0
-    endif
-    VoreCore.BreastMax = PerkProgress
-    Debug.Trace("IntelligenceQ +:" + PerkProgress)
+    UpdatePerkProgress()
 endfunction
 
 ; ========
 ; Private
 ; ========
 
-function PerkDecay(float time)
-    PerkProgress -= time * PerkDecay * difficultyScaling
-    if PerkProgress < 0.0
+function UpdatePerkProgress()
+    if PerkProgress > 2.0
+        PerkProgress = 2.0
+    elseif PerkProgress < 0.0
         PerkProgress = 0.0
     endif
-    VoreCore.BreastMax = PerkProgress
-    Debug.Trace("IntelligenceQ -:" + PerkProgress)
+
+    if PerkProgress <= 1.0
+        VoreCore.BreastMax = PerkProgress
+    else
+        VoreCore.BreastMax = 1.0
+    endif
+    Debug.Trace("IntelligenceQ:" + PerkProgress)
+endfunction
+
+function PerkDecay(float time)
+    PerkProgress -= time * PerkDecay * difficultyScaling
+    UpdatePerkProgress()
 endfunction
 
 function ApplyPerks(float topFat)

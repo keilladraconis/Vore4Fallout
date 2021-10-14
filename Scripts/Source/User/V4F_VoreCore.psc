@@ -20,6 +20,7 @@ struct Vore
     float topFat = 0.0
     float bottomFat = 0.0
     float fat = 0.0
+    float muscle = 0.0
 endstruct
 
 struct Body
@@ -47,6 +48,7 @@ struct Body
     float buttRound = 0.0
     float UKTop = 0.0
     float UKBottom = 0.0
+    float muscle = 0.0
 endstruct
 
 ; Timer hacks
@@ -57,12 +59,15 @@ float HackClockLowestTime
 float GameTimeElapsed
 
 float calorieDensity = 144000.0 ; If the full belly is 1.25 feet in radius, 8 cubic feet, or 60 gallons, then at 2400 calories per gallon a full belly of milk would be 144000 calories.
+float metabolicRate = -0.0289 ; Assuming 2500 calories per day.
+bool hasExercised
 
 ; This is used for updating script-level variables. To invoke this, also update the OnPlayerLoadGame event to bump the version
 int version = 1
 function Updateversion(int v)
     if v < version
         calorieDensity = 144000.0
+        metabolicRate = -0.0289
         Body oldBody = PlayerBody
         pPlayerBody = new Body
         pPlayerBody.vorePreyBelly = oldBody.vorePreyBelly
@@ -87,17 +92,30 @@ function Updateversion(int v)
         pPlayerBody.buttCWaist = oldBody.buttCWaist
         pPlayerBody.buttApple = oldBody.buttApple
         pPlayerBody.buttRound = oldBody.buttRound
+        pPlayerBody.UKBottom = oldBody.UKBottom
+        pPlayerBody.UKTop = oldBody.UKTop
+
+        Vore oldVore = PlayerVore
+        pPlayerVore = new Vore
+        pPlayerVore.food = oldVore.food
+        pPlayerVore.prey = oldVore.prey
+        pPlayerVore.topFat = oldVore.topFat
+        pPlayerVore.bottomFat = oldVore.bottomFat
+        pPlayerVore.fat = oldVore.fat
+        pPlayerVore.muscle = oldVore.muscle
+
         version = v
     endif
 endfunction
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
     EnsureSwallowItem()
-    Updateversion(2)
+    Updateversion(3)
 EndEvent
 
 float property BreastMax = 0.0 Auto
 float property ButtMax = 0.0 Auto
+float property MuscleMax = 0.0 Auto
 
 Body pPlayerBody
 Body Property PlayerBody
@@ -265,22 +283,26 @@ function HandleSwallow(Actor prey)
         BellyContent.Add(prey)
         if !isProcessingVore
             isProcessingVore = true
-            StartTimer(10.0, 70)
         endif
     else
         Debug.Notification("You have no room in your stomach!")
     endif
 endfunction
 
+function SetExerciseBoost()
+    hasExercised = true
+endfunction
+
 ; =======
 ; Private
 ; =======
 
-function Update(float time, bool digest = true)
-    if digest
+function Update(float time, bool doDigest = true)
+    if doDigest
         float calories = Digest(time)
-        Debug.Trace("Metabolic Rate:" + AgilityQ.ComputeMetabolicRate(time) + " per:" + time)
-        Metabolize(calories + AgilityQ.ComputeMetabolicRate(time)) ; Represents the base metabolic rate of the player. Burn calories.      
+        float meta = ComputeMetabolicRate(time)
+        Debug.Trace("Metabolic Rate:" + meta + " per:" + time)
+        Metabolize(calories + meta)
     endif
     if isProcessingVore
         ProcessVore(time / 10.0)
@@ -293,16 +315,26 @@ function Update(float time, bool digest = true)
     Debug.Trace("BrM: " + BreastMax + " BtM: " + ButtMax)
 endfunction
 
+float function ComputeMetabolicRate(float time)
+    if hasExercised
+        hasExercised = false
+        return metabolicRate * time * (1 + Math.pow(PlayerVore.fat - 1.0, 2)) * difficultyScaling
+    else
+        return metabolicRate * time * difficultyScaling
+    endif
+endfunction
+
 function SendBodyMassEvent()
     Var[] args = new Var[1]
-    args[0] = PlayerVore.prey + (PlayerVore.food / 4.0) + (PlayerVore.fat)
+    args[0] = PlayerVore.prey + (PlayerVore.food / 1.0) + (PlayerVore.fat)
     SendCustomEvent("BodyMassEvent", args)
 endfunction
 
 function SendBodyShapeEvent()
-    Var[] args = new Var[2]
+    Var[] args = new Var[3]
     args[0] = PlayerVore.topFat
     args[1] = PlayerVore.bottomFat
+    args[2] = PlayerVore.muscle
     SendCustomEvent("BodyShapeEvent", args)
 endfunction
 
@@ -371,7 +403,8 @@ endfunction
 function UpdateBody()
     PlayerBody.bbw = PlayerVore.fat
     PlayerBody.vorePreyBelly = PlayerVore.prey
-    PlayerBody.giantBellyUp = Math.Max(0, PlayerVore.prey + (PlayerVore.food / 2) - 14000) * 6 
+    PlayerBody.giantBellyUp = (Math.max(0.0, PlayerVore.prey - (1.2 - PlayerVore.fat * 0.5)) + Math.max(0.0, PlayerVore.food - (2.5 - PlayerVore.fat * 0.4))) * 2
+    Debug.Trace("PB:" + PlayerBody)
     if PlayerVore.food >= 0.0 && PlayerVore.food <= 0.1
         PlayerBody.bigBelly         = PlayerVore.food * 10.0
         PlayerBody.tummyTuck        = PlayerVore.food * 10.0
@@ -538,22 +571,25 @@ Function Metabolize(float calories)
     Debug.Trace("Metabolize: " + calories)
     If calories > 0
         Debug.Trace("Gaining...")
-        float topCalories = MetabolizeTop(calories / 2.0)
-        calories = MetabolizeBottom((calories / 2.0) + topCalories)
-        calories = MetabolizeRest(calories)
-    Elseif PlayerVore.fat > 0.0 || PlayerVore.topFat > 0.0 || PlayerVore.bottomFat > 0.0
+        float muscleCalories = MetabolizeMuscle(calories / 3.0)
+        float topCalories = MetabolizeTop(calories / 3.0)
+        float bottomCalories = MetabolizeBottom(calories / 3.0)
+        calories = MetabolizeRest(muscleCalories + topCalories + bottomCalories)
+    Elseif PlayerVore.fat > 0.0 || PlayerVore.topFat > 0.0 || PlayerVore.bottomFat > 0.0 || PlayerVore.muscle > 0.0
         Debug.Trace("Losing...")
         Player.RestoreValue(HealthAV, -calories * PerceptionQ.DigestHealthRestore()) ; Heal slowly when burning fat
         calories = MetabolizeRest(calories)
         if calories == 0.0
             return ; Stop processing if we have burned all calories as fat.
         endif
-        float bottomCalories = MetabolizeBottom(calories / 2.0)
-        calories = MetabolizeTop((calories / 2.0) + bottomCalories)
+        MetabolizeBottom(calories / 3.0)
+        MetabolizeTop(calories / 3.0)
+        MetabolizeMuscle(calories / 3.0)
     else
         PlayerVore.fat = 0.0
         PlayerVore.topFat = 0.0
         PlayerVore.bottomFat = 0.0
+        PlayerVore.muscle = 0.0
     EndIf
 EndFunction
 
@@ -586,7 +622,7 @@ float Function MetabolizeTop(float calories)
 EndFunction
 
 float Function MetabolizeBottom(float calories)
-    PlayerVore.bottomFat += (calories / 3500) * 0.01
+    PlayerVore.bottomFat += (calories / 3500) * 0.025
 
     If calories > 0 && PlayerVore.bottomFat > ButtMax
         float excess = PlayerVore.bottomFat - ButtMax
@@ -595,6 +631,22 @@ float Function MetabolizeBottom(float calories)
     ElseIf PlayerVore.bottomFat < 0.0
         float excess = PlayerVore.bottomFat
         PlayerVore.bottomFat = 0.0
+        return excess * 100 * 3500
+    Else
+        return 0.0
+    EndIf
+EndFunction
+
+float Function MetabolizeMuscle(float calories)
+    PlayerVore.muscle += (calories / 3500) * 0.01
+
+    If calories > 0 && PlayerVore.muscle > MuscleMax
+        float excess = PlayerVore.muscle - MuscleMax
+        PlayerVore.muscle = MuscleMax
+        return excess * 100 * 3500
+    ElseIf PlayerVore.muscle < 0.0
+        float excess = PlayerVore.muscle
+        PlayerVore.muscle = 0.0
         return excess * 100 * 3500
     Else
         return 0.0

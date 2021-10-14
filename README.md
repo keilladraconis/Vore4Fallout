@@ -66,6 +66,27 @@ Frankly, I think most of this stuff should be scoped to companion mods. A great 
 - [x] Belly Inventory: System keeps track of what you're digesting, dropped items.
 - [ ] Fast Travel elapsed time is taken into account for digestion/metabolism.
 
+## Camera Fix
+As you inevitably become YUGE, you may find you need your camerawoman to stand back a bit. Here's what you can put in `Fallout4.ini`
+```ini
+[Camera]
+f3rdPersonAimFOV=50.0000
+fVanityModeMaxDist=700.0000
+fVanityModeMinDist=50.0000
+fPitchZoomOutMaxDist=200.0000
+fMinCurrentZoom=0.0000
+fMouseWheelZoomSpeed=2.0000
+fMouseWheelZoomIncrement=0.2000
+f3rdPersonPowerArmorCameraAdjust=0.0000
+fOverShoulderMeleeCombatAddY=0.0000
+fOverShoulderMeleeCombatPosZ=30.0000 
+fOverShoulderMeleeCombatPosX=0.0000
+fOverShoulderCombatAddY=0.0000
+fOverShoulderCombatPosZ=30.0000
+fOverShoulderCombatPosX=0.0000
+fOverShoulderPosZ=20.0000
+```
+
 ## Vore notes
 
 It seems like the fat loss is happening wrong, where the breasts/butt get preferentially diminished. Need to test more.

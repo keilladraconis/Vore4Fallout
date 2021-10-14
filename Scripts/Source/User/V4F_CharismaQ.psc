@@ -50,6 +50,7 @@ EndEvent
 float difficultyScaling
 Event Actor.OnDifficultyChanged(Actor akSender, int aOldDifficulty, int aNewDifficulty)
     UpdateDifficultyScaling(aNewDifficulty)
+    GotoState("")
 EndEvent
 
 function UpdateDifficultyScaling(int difficulty)
@@ -103,24 +104,31 @@ EndEvent
 
 function Increment()
     PerkProgress += PerkRate * difficultyScaling
-    if PerkProgress > 2.0
-        PerkProgress = 2.0
-    endif
-    VoreCore.ButtMax = PerkProgress
-    Debug.Trace("CharismaQ +:" + PerkProgress)
+    UpdatePerkProgress()
 endfunction
 
 ; ========
 ; Private
 ; ========
 
-function PerkDecay(float time)
-    PerkProgress -= time * PerkDecay * difficultyScaling
-    if PerkProgress < 0.0
+function UpdatePerkProgress()
+    if PerkProgress > 2.0
+        PerkProgress = 2.0
+    elseif PerkProgress < 0.0
         PerkProgress = 0.0
     endif
-    VoreCore.ButtMax = PerkProgress
-    Debug.Trace("CharismaQ -:" + PerkProgress)
+
+    if PerkProgress <= 1.0
+        VoreCore.ButtMax = PerkProgress
+    else
+        VoreCore.ButtMax = 1.0
+    endif
+    Debug.Trace("CharismaQ:" + PerkProgress)
+endfunction
+
+function PerkDecay(float time)
+    PerkProgress -= time * PerkDecay * difficultyScaling
+    UpdatePerkProgress()
 endfunction
 
 function ApplyPerks(float bottomFat)

@@ -30,6 +30,7 @@ endfunction
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
 	Updateversion(3)
+    GotoState("")
 EndEvent
 
 Actor Player

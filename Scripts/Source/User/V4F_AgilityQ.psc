@@ -22,21 +22,20 @@ float GameTimeElapsed
 float PerkProgress = 0.0
 float previousTime
 
-float metabolicRate = -0.0289 ; Assuming 2500 calories per day.
-float PerkRate = 0.0
+float PerkRate = 0.2
 int version
 ; This is used for updating script-level variables. To invoke this, also update the OnPlayerLoadGame event to bump the version
 function Updateversion(int v)
     if v > version
-        metabolicRate = -0.0289
-        PerkRate = 0.0
+        PerkRate = 0.2
         RegisterForCustomEvent(VoreCore, "BodyMassEvent")
         version = v
     endif
 endfunction
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
-	Updateversion(5)
+	Updateversion(6)
+    GotoState("")
 EndEvent
 
 Actor Player
@@ -96,7 +95,8 @@ Event OnTimerGameTime(int timer)
         float timeDelta = (Utility.GetCurrentGameTime() - GameTimeElapsed) / (1.0 / 24.0) * 60 * 60
         GameTimeElapsed = Utility.GetCurrentGameTime()
 
-        Update(timeDelta / 3600.0)
+        PerkDecay(timeDelta / 3600.0)
+        Debug.Trace("AgilityQ:" + PerkProgress)
         StartTimerGameTime(10.0/60.0, 1)
     elseif timer == TIMER_cooldown
         GotoState("")
@@ -112,27 +112,9 @@ Event OnPlayerTeleport()
     endif
 EndEvent
 
-Event V4F_VoreCore.BodyMassEvent(V4F_VoreCore akSender, Var[] akArgs)
-    GotoState("Cooldown")
-    float bodyMass = akArgs[0] as float
-    if bodyMass <= 1.0
-        PerkRate -= 1.0 * difficultyScaling
-        if PerkRate <= 1.0
-            PerkRate = 0.0
-        endif
-        Debug.Trace("Bodymass low, reducing AgilityPerk rate:" + PerkRate)
-    endif
-EndEvent
-
 ; ========
 ; Public
 ; ========
-
-float function ComputeMetabolicRate(float time)
-    float agilityBonus = Player.GetValue(AgilityAV) / 4.0
-    Debug.Trace("MBR: " + metabolicRate + " t: " + time + " ag: " + agilityBonus + " pp: " + PerkProgress + " ds: " + difficultyScaling)
-    return metabolicRate * time * agilityBonus * (1 + PerkProgress * 10) * difficultyScaling
-endfunction
 
 function Increment(float amount = 1.0)
     GotoState("Cooldown")
@@ -148,32 +130,28 @@ function Increment(float amount = 1.0)
     ElseIf Player.HasPerk(V4F_VoreBurden5)
         burdenBonus = 3.0
     endif
-    PerkRate += amount * burdenBonus * difficultyScaling
-    Debug.Trace("AgilityQ Perkrate:" + PerkRate)
+    PerkProgress += amount * burdenBonus * difficultyScaling
     ApplyPerks()
     StartTimerGameTime(1.0, TIMER_cooldown)
 endfunction
 
 state Cooldown
     function Increment(float amount = 1.0)
+        Debug.Trace("Agility Increment Cooldown")
     endfunction
-
-    Event V4F_VoreCore.BodyMassEvent(V4F_VoreCore akSender, Var[] akArgs)
-    EndEvent
 endstate
 
 ; ========
 ; Private
 ; ========
 
-function Update(float time)
-    PerkProgress += time * PerkRate * difficultyScaling
+function PerkDecay(float time)
+    PerkProgress -= time * PerkRate * difficultyScaling
     
     if PerkProgress < 0.0
         PerkProgress = 0.0
     endif
     ApplyPerks()
-    Debug.Trace("AgilityQ:" + PerkProgress)
 endfunction
 
 function ApplyPerks()
@@ -185,16 +163,16 @@ function ApplyPerks()
     if PerkProgress >= 1.0
         Player.AddPerk(V4F_Agility1)
     endif
-    if PerkProgress >= 20.0
+    if PerkProgress >= 2.0
         Player.AddPerk(V4F_Agility2)
     endif
-    if PerkProgress >= 30.0
+    if PerkProgress >= 3.0
         Player.AddPerk(V4F_Agility3)
     endif
-    if PerkProgress >= 40.0
+    if PerkProgress >= 4.0
         Player.AddPerk(V4F_Agility4)
     endif
-    if PerkProgress >= 50.0
+    if PerkProgress >= 5.0
         Player.AddPerk(V4F_Agility5)
     endif
 endfunction

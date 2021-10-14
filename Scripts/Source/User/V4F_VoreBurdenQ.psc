@@ -37,6 +37,7 @@ endevent
 ; ========
 
 function ApplyPerks(float burden)
+    Debug.Trace("Burden:" + burden)
     Player.SetValue(SpeedMult, 100)
     Player.RemovePerk(V4F_VoreBurden1)
     Player.RemovePerk(V4F_VoreBurden2)
