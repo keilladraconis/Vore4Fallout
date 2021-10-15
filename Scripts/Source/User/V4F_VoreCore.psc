@@ -316,12 +316,14 @@ function Update(float time, bool doDigest = true)
 endfunction
 
 float function ComputeMetabolicRate(float time)
-    if hasExercised
-        hasExercised = false
-        return metabolicRate * time * (1 + Math.pow(PlayerVore.fat - 1.0, 2)) * difficultyScaling
+    float expRate
+    if PlayerVore.fat > 1.0
+        expRate = 1 + Math.pow(PlayerVore.fat - 1.0, 2) * 800 ; Change this last factor to increase the scaling of the exponential function. at 800 you burn about a million calories every 10 minutes at fat 6
     else
-        return metabolicRate * time * difficultyScaling
+        expRate = 1.0
     endif
+    ; Not using hasExercised for now
+    return metabolicRate * time * expRate * difficultyScaling
 endfunction
 
 function SendBodyMassEvent()
@@ -403,7 +405,7 @@ endfunction
 function UpdateBody()
     PlayerBody.bbw = PlayerVore.fat
     PlayerBody.vorePreyBelly = PlayerVore.prey
-    PlayerBody.giantBellyUp = (Math.max(0.0, PlayerVore.prey - (1.2 - PlayerVore.fat * 0.5)) + Math.max(0.0, PlayerVore.food - (2.5 - PlayerVore.fat * 0.4))) * 2
+    PlayerBody.giantBellyUp = (Math.max(0.0, PlayerVore.prey - (1.2 - PlayerVore.fat * 0.5)) + Math.max(0.0, PlayerVore.food - (2.5 - PlayerVore.fat * 0.3))) * 2
     Debug.Trace("PB:" + PlayerBody)
     if PlayerVore.food >= 0.0 && PlayerVore.food <= 0.1
         PlayerBody.bigBelly         = PlayerVore.food * 10.0
@@ -594,7 +596,12 @@ Function Metabolize(float calories)
 EndFunction
 
 float Function MetabolizeRest(float calories)
-    PlayerVore.fat += (calories / 3500.0) * 0.005 ; 1/2% per pound of calories
+    ; You may metabolize up to 10% of your total fat on any step. Prevents sudden shrinkage
+    float fatChange = (calories / 3500) * 0.005
+    if fatChange < PlayerVore.fat * -0.5
+        fatChange = PlayerVore.fat * -0.5
+    endif
+    PlayerVore.fat += fatChange
 
     If PlayerVore.fat < 0.0
         float excess = PlayerVore.fat
@@ -606,7 +613,12 @@ float Function MetabolizeRest(float calories)
 EndFunction
 
 float Function MetabolizeTop(float calories)
-    PlayerVore.topFat += (calories / 3500) * 0.025
+    ; You may metabolize up to 10% of your total fat on any step. Prevents sudden shrinkage
+    float fatChange = (calories / 3500) * 0.025
+    if fatChange < PlayerVore.topFat * -0.1
+        fatChange = PlayerVore.topFat * -0.1
+    endif
+    PlayerVore.topFat += fatChange
 
     If calories > 0 && PlayerVore.topFat > BreastMax
         float excess = PlayerVore.topFat - BreastMax
@@ -622,23 +634,33 @@ float Function MetabolizeTop(float calories)
 EndFunction
 
 float Function MetabolizeBottom(float calories)
-    PlayerVore.bottomFat += (calories / 3500) * 0.025
+    ; You may metabolize up to 10% of your total fat on any step. Prevents sudden shrinkage
+    float fatChange = (calories / 3500) * 0.025
+    if fatChange < PlayerVore.bottomFat * -0.1
+        fatChange = PlayerVore.bottomFat * -0.1
+    endif
+    PlayerVore.bottomFat += fatChange
 
     If calories > 0 && PlayerVore.bottomFat > ButtMax
         float excess = PlayerVore.bottomFat - ButtMax
         PlayerVore.bottomFat = ButtMax
-        return excess * 100 * 3500
+        return excess * 40 * 3500
     ElseIf PlayerVore.bottomFat < 0.0
         float excess = PlayerVore.bottomFat
         PlayerVore.bottomFat = 0.0
-        return excess * 100 * 3500
+        return excess * 40 * 3500
     Else
         return 0.0
     EndIf
 EndFunction
 
 float Function MetabolizeMuscle(float calories)
-    PlayerVore.muscle += (calories / 3500) * 0.01
+    ; You may metabolize up to 10% of your total fat on any step. Prevents sudden shrinkage
+    float fatChange = (calories / 3500) * 0.025
+    if fatChange < PlayerVore.muscle * -0.1
+        fatChange = PlayerVore.muscle * -0.1
+    endif
+    PlayerVore.muscle += fatChange
 
     If calories > 0 && PlayerVore.muscle > MuscleMax
         float excess = PlayerVore.muscle - MuscleMax

@@ -120,15 +120,15 @@ function Increment(float amount = 1.0)
     GotoState("Cooldown")
     float burdenBonus = 1.0
     if Player.HasPerk(V4F_VoreBurden1)
-        burdenBonus = 1.2
+        burdenBonus = 1.1
     ElseIf Player.HasPerk(V4F_VoreBurden2)
-        burdenBonus = 1.4
+        burdenBonus = 1.2
     ElseIf Player.HasPerk(V4F_VoreBurden3)
-        burdenBonus = 1.8
+        burdenBonus = 1.3
     ElseIf Player.HasPerk(V4F_VoreBurden4)
-        burdenBonus = 2.0
+        burdenBonus = 1.4
     ElseIf Player.HasPerk(V4F_VoreBurden5)
-        burdenBonus = 3.0
+        burdenBonus = 1.5
     endif
     PerkProgress += amount * burdenBonus * difficultyScaling
     ApplyPerks()
