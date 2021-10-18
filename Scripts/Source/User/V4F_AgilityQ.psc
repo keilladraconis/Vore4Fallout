@@ -12,8 +12,6 @@ Perk Property V4F_VoreBurden3 Auto Const
 Perk Property V4F_VoreBurden4 Auto Const
 Perk Property V4F_VoreBurden5 Auto Const
 
-int TIMER_cooldown = 2 const
-
 float PerkProgress = 0.0
 float previousTime
 
@@ -23,7 +21,6 @@ int version
 function Updateversion(int v)
     if v > version
         PerkRate = 0.2
-        RegisterForCustomEvent(VoreCore, "BodyMassEvent")
         RegisterForCustomEvent(VoreCore, "VoreTimeEvent")
         version = v
     endif
@@ -94,7 +91,7 @@ function Increment(float amount = 1.0)
     endif
     PerkProgress += amount * burdenBonus * difficultyScaling
     ApplyPerks()
-    StartTimerGameTime(1.0, TIMER_cooldown)
+    StartTimerGameTime(1.0)
 endfunction
 
 state Cooldown

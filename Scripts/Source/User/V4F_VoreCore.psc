@@ -326,8 +326,8 @@ endfunction
 
 float function ComputeMetabolicRate(float time)
     float expRate
-    if PlayerVore.fat > 1.0
-        expRate = 1 + Math.pow(PlayerVore.fat, 2) * 800 ; Change this last factor to increase the scaling of the exponential function. at 800 you burn about a million calories every 10 minutes at fat 6
+    if PlayerVore.fat > 0.5
+        expRate = 1 + Math.pow(PlayerVore.fat + 0.5, 2) * 1 ; Change this last factor to increase the scaling of the exponential function. at 800 you burn about a million calories every 10 minutes at fat 6
     else
         expRate = 1.0
     endif
@@ -414,7 +414,7 @@ endfunction
 function UpdateBody()
     PlayerBody.bbw = PlayerVore.fat
     PlayerBody.vorePreyBelly = PlayerVore.prey
-    PlayerBody.giantBellyUp = (Math.max(0.0, PlayerVore.prey - (1.2 - PlayerVore.fat * 0.5)) + Math.max(0.0, PlayerVore.food - (2.5 - PlayerVore.fat * 0.3))) * 2
+    PlayerBody.giantBellyUp = (Math.max(0.0, PlayerVore.prey - (1.2 - PlayerVore.fat * 0.4)) + Math.max(0.0, PlayerVore.food - (2.5 - PlayerVore.fat * 0.3))) * 2
     Debug.Trace("PB:" + PlayerBody)
     if PlayerVore.food >= 0.0 && PlayerVore.food <= 0.1
         PlayerBody.bigBelly         = PlayerVore.food * 10.0
