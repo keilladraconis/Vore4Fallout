@@ -260,8 +260,11 @@ function HandleSwallow(Actor prey)
         BellyContent = new Actor[0]
     endif
 
-    ; Not allowed to eat essential characters. Sometimes they talk while bleeding out, or you need to harvest their organs for the plot.
-    if prey.IsEssential()
+    ; Not allowed to eat essential or unique characters. Sometimes they talk while bleeding out, or you need to harvest their organs for the plot.
+    if prey.GetActorBase().IsEssential()
+        return
+    endif
+    if prey.GetActorBase().IsUnique()
         return
     endif
 
