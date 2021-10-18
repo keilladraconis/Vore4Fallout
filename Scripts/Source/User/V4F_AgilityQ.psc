@@ -1,5 +1,6 @@
 Scriptname V4F_AgilityQ extends Quest
 V4F_VoreCore Property VoreCore Auto Const Mandatory
+Spell Property V4F_Agility Auto Const
 Perk Property V4F_Agility1 Auto Const
 Perk Property V4F_Agility2 Auto Const
 Perk Property V4F_Agility3 Auto Const
@@ -155,24 +156,47 @@ function PerkDecay(float time)
 endfunction
 
 function ApplyPerks()
-    Player.RemovePerk(V4F_Agility1)
-    Player.RemovePerk(V4F_Agility2)
-    Player.RemovePerk(V4F_Agility3)
-    Player.RemovePerk(V4F_Agility4)
-    Player.RemovePerk(V4F_Agility5)
-    if PerkProgress >= 1.0
-        Player.AddPerk(V4F_Agility1)
-    endif
-    if PerkProgress >= 2.0
-        Player.AddPerk(V4F_Agility2)
-    endif
-    if PerkProgress >= 3.0
-        Player.AddPerk(V4F_Agility3)
-    endif
-    if PerkProgress >= 4.0
-        Player.AddPerk(V4F_Agility4)
-    endif
     if PerkProgress >= 5.0
+        Player.AddPerk(V4F_Agility1)
+        Player.AddPerk(V4F_Agility2)
+        Player.AddPerk(V4F_Agility3)
+        Player.AddPerk(V4F_Agility4)
         Player.AddPerk(V4F_Agility5)
+        Player.AddSpell(V4F_Agility)
+    elseif PerkProgress >= 4.0
+        Player.AddPerk(V4F_Agility1)
+        Player.AddPerk(V4F_Agility2)
+        Player.AddPerk(V4F_Agility3)
+        Player.AddPerk(V4F_Agility4)
+        Player.RemovePerk(V4F_Agility5)   
+        Player.AddSpell(V4F_Agility)
+    elseif PerkProgress >= 3.0
+        Player.AddPerk(V4F_Agility1)
+        Player.AddPerk(V4F_Agility2)
+        Player.AddPerk(V4F_Agility3)
+        Player.RemovePerk(V4F_Agility4)
+        Player.RemovePerk(V4F_Agility5)
+        Player.AddSpell(V4F_Agility)
+    elseif PerkProgress >= 2.0
+        Player.AddPerk(V4F_Agility1)
+        Player.AddPerk(V4F_Agility2)
+        Player.RemovePerk(V4F_Agility3)
+        Player.RemovePerk(V4F_Agility4)
+        Player.RemovePerk(V4F_Agility5)
+        Player.AddSpell(V4F_Agility)
+    elseif PerkProgress >= 1.0
+        Player.AddPerk(V4F_Agility1)
+        Player.RemovePerk(V4F_Agility2)
+        Player.RemovePerk(V4F_Agility3)
+        Player.RemovePerk(V4F_Agility4)
+        Player.RemovePerk(V4F_Agility5)
+        Player.AddSpell(V4F_Agility)
+    else
+        Player.RemovePerk(V4F_Agility1)
+        Player.RemovePerk(V4F_Agility2)
+        Player.RemovePerk(V4F_Agility3)
+        Player.RemovePerk(V4F_Agility4)
+        Player.RemovePerk(V4F_Agility5)
+        Player.RemoveSpell(V4F_Agility)
     endif
 endfunction

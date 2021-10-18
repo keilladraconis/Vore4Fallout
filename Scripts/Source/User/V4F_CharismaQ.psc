@@ -1,5 +1,6 @@
 Scriptname V4F_CharismaQ extends Quest
 V4F_VoreCore Property VoreCore Auto Const Mandatory
+Spell Property V4f_Charisma Auto Const
 Perk Property V4F_Charisma1 Auto Const
 Perk Property V4F_Charisma2 Auto Const
 Perk Property V4F_Charisma3 Auto Const
@@ -132,24 +133,47 @@ function PerkDecay(float time)
 endfunction
 
 function ApplyPerks(float bottomFat)
-    Player.RemovePerk(V4F_Charisma1)
-    Player.RemovePerk(V4F_Charisma2)
-    Player.RemovePerk(V4F_Charisma3)
-    Player.RemovePerk(V4F_Charisma4)
-    Player.RemovePerk(V4F_Charisma5)
-    if bottomFat >= 0.2
-        Player.AddPerk(V4F_Charisma1)
-    endif
-    if bottomFat >= 0.4
-        Player.AddPerk(V4F_Charisma2)
-    endif
-    if bottomFat >= 0.6
-        Player.AddPerk(V4F_Charisma3)
-    endif
-    if bottomFat >= 0.8
-        Player.AddPerk(V4F_Charisma4)
-    endif
     if bottomFat >= 1.0
+        Player.AddPerk(V4F_Charisma1)
+        Player.AddPerk(V4F_Charisma2)
+        Player.AddPerk(V4F_Charisma3)
+        Player.AddPerk(V4F_Charisma4)
         Player.AddPerk(V4F_Charisma5)
+        Player.AddSpell(V4F_Charisma)
+    elseif bottomFat >= 0.8
+        Player.AddPerk(V4F_Charisma1)
+        Player.AddPerk(V4F_Charisma2)
+        Player.AddPerk(V4F_Charisma3)
+        Player.AddPerk(V4F_Charisma4)
+        Player.RemovePerk(V4F_Charisma5)   
+        Player.AddSpell(V4F_Charisma)
+    elseif bottomFat >= 0.6
+        Player.AddPerk(V4F_Charisma1)
+        Player.AddPerk(V4F_Charisma2)
+        Player.AddPerk(V4F_Charisma3)
+        Player.RemovePerk(V4F_Charisma4)
+        Player.RemovePerk(V4F_Charisma5
+        Player.AddSpell(V4F_Charisma)
+    elseif bottomFat >= 0.4
+        Player.AddPerk(V4F_Charisma1)
+        Player.AddPerk(V4F_Charisma2)
+        Player.RemovePerk(V4F_Charisma3)
+        Player.RemovePerk(V4F_Charisma4)
+        Player.RemovePerk(V4F_Charisma5)
+        Player.AddSpell(V4F_Charisma)
+    elseif bottomFat >= 0.2
+        Player.AddPerk(V4F_Charisma1)
+        Player.RemovePerk(V4F_Charisma2)
+        Player.RemovePerk(V4F_Charisma3)
+        Player.RemovePerk(V4F_Charisma4)
+        Player.RemovePerk(V4F_Charisma5)
+        Player.AddSpell(V4F_Charisma)
+    else
+        Player.RemovePerk(V4F_Charisma1)
+        Player.RemovePerk(V4F_Charisma2)
+        Player.RemovePerk(V4F_Charisma3)
+        Player.RemovePerk(V4F_Charisma4)
+        Player.RemovePerk(V4F_Charisma5)
+        Player.RemoveSpell(V4F_Charisma)
     endif
 endfunction

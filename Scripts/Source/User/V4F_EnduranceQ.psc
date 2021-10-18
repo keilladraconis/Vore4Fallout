@@ -1,5 +1,6 @@
 Scriptname V4F_EnduranceQ extends Quest
 V4F_VoreCore Property VoreCore Auto Const Mandatory
+Spell Property V4F_Endurance Auto
 Perk Property V4F_Endurance1 Auto
 Perk Property V4F_Endurance2 Auto
 Perk Property V4F_Endurance3 Auto
@@ -152,24 +153,47 @@ function PerkDecay(float time)
 endfunction
 
 function ApplyPerks()
-    Player.RemovePerk(V4F_Endurance1)
-    Player.RemovePerk(V4F_Endurance2)
-    Player.RemovePerk(V4F_Endurance3)
-    Player.RemovePerk(V4F_Endurance4)
-    Player.RemovePerk(V4F_Endurance5)
-    if PerkProgress >= 1.0
-        Player.AddPerk(V4F_Endurance1)
-    endif
-    if PerkProgress >= 2.0
-        Player.AddPerk(V4F_Endurance2)
-    endif
-    if PerkProgress >= 3.0
-        Player.AddPerk(V4F_Endurance3)
-    endif
-    if PerkProgress >= 4.0
-        Player.AddPerk(V4F_Endurance4)
-    endif
     if PerkProgress >= 5.0
+        Player.AddPerk(V4F_Endurance1)
+        Player.AddPerk(V4F_Endurance2)
+        Player.AddPerk(V4F_Endurance3)
+        Player.AddPerk(V4F_Endurance4)
         Player.AddPerk(V4F_Endurance5)
+        Player.AddSpell(V4F_Endurance)
+    elseif PerkProgress >= 4.0
+        Player.AddPerk(V4F_Endurance1)
+        Player.AddPerk(V4F_Endurance2)
+        Player.AddPerk(V4F_Endurance3)
+        Player.AddPerk(V4F_Endurance4)
+        Player.RemovePerk(V4F_Endurance5)   
+        Player.AddSpell(V4F_Endurance)
+    elseif PerkProgress >= 3.0
+        Player.AddPerk(V4F_Endurance1)
+        Player.AddPerk(V4F_Endurance2)
+        Player.AddPerk(V4F_Endurance3)
+        Player.RemovePerk(V4F_Endurance4)
+        Player.RemovePerk(V4F_Endurance5)
+        Player.AddSpell(V4F_Endurance)
+    elseif PerkProgress >= 2.0
+        Player.AddPerk(V4F_Endurance1)
+        Player.AddPerk(V4F_Endurance2)
+        Player.RemovePerk(V4F_Endurance3)
+        Player.RemovePerk(V4F_Endurance4)
+        Player.RemovePerk(V4F_Endurance5)
+        Player.AddSpell(V4F_Endurance)
+    elseif PerkProgress >= 1.0
+        Player.AddPerk(V4F_Endurance1)
+        Player.RemovePerk(V4F_Endurance2)
+        Player.RemovePerk(V4F_Endurance3)
+        Player.RemovePerk(V4F_Endurance4)
+        Player.RemovePerk(V4F_Endurance5)
+        Player.AddSpell(V4F_Endurance)
+    else
+        Player.RemovePerk(V4F_Endurance1)
+        Player.RemovePerk(V4F_Endurance2)
+        Player.RemovePerk(V4F_Endurance3)
+        Player.RemovePerk(V4F_Endurance4)
+        Player.RemovePerk(V4F_Endurance5)
+        Player.RemoveSpell(V4F_Endurance)
     endif
 endfunction

@@ -1,0 +1,19 @@
+{
+    // created by vscode papyrus-lang papyrus.skyrimSpecialEdition.generateProject
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "pyro",
+            "projectFile": "fallout4.ppj",
+            "gamePath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Fallout 4\\",
+            "problemMatcher": [
+                "$PapyrusCompiler"
+            ],
+            "label": "pyro: Compile Project (fallout4.ppj)",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+    ]
+}

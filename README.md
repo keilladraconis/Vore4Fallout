@@ -87,9 +87,11 @@ fOverShoulderCombatPosX=0.0000
 fOverShoulderPosZ=20.0000
 ```
 
+## Rebuild AnimInfo Files
+Go to the fallout 4 directory and execute:
+```
+CreationKit.exe -GenerateAnimInfo:Vore4Fallout.esp .\Data .\Data
+```
+Then copy the resulting AnimTextData found in Data\Meshes to this repo
+
 ## Vore notes
-
-It seems like the fat loss is happening wrong, where the breasts/butt get preferentially diminished. Need to test more.
-Also, perhaps the perk degradation is also way too fast. And most perks should let you over-stack so that you don't immediately fall off of 5* on the first tick down.
-
-Finally, need to ensure that if I run back and forth between two locations, I experience proper perk adjustment, such as earning a lot of agility perk for fast travel.

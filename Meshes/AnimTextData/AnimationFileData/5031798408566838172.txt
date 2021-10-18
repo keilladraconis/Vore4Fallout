@@ -1,0 +1,8 @@
+3
+1
+5031798408566838172
+4
+Actors\Character\Behaviors\DialogueBehavior.hkx
+Actors\Character\Animations\Vore 4 Fallout\Immobile\EnterFromStand.hkx
+Actors\Character\Animations\Vore 4 Fallout\Immobile\ExitToStand.hkx
+Actors\Character\Animations\Vore 4 Fallout\Immobile\PoseA_Idle1.hkx

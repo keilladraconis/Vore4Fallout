@@ -1,5 +1,6 @@
 Scriptname V4F_IntelligenceQ extends Quest
 V4F_VoreCore Property VoreCore Auto Const Mandatory
+Spell Property V4F_Intelligence Auto Const
 Perk Property V4F_Intelligence1 Auto Const
 Perk Property V4F_Intelligence2 Auto Const
 Perk Property V4F_Intelligence3 Auto Const
@@ -132,24 +133,47 @@ function PerkDecay(float time)
 endfunction
 
 function ApplyPerks(float topFat)
-    Player.RemovePerk(V4F_Intelligence1)
-    Player.RemovePerk(V4F_Intelligence2)
-    Player.RemovePerk(V4F_Intelligence3)
-    Player.RemovePerk(V4F_Intelligence4)
-    Player.RemovePerk(V4F_Intelligence5)
-    if topFat >= 0.2
-        Player.AddPerk(V4F_Intelligence1)
-    endif
-    if topFat >= 0.4
-        Player.AddPerk(V4F_Intelligence2)
-    endif
-    if topFat >= 0.6
-        Player.AddPerk(V4F_Intelligence3)
-    endif
-    if topFat >= 0.8
-        Player.AddPerk(V4F_Intelligence4)
-    endif
     if topFat >= 1.0
+        Player.AddPerk(V4F_Intelligence1)
+        Player.AddPerk(V4F_Intelligence2)
+        Player.AddPerk(V4F_Intelligence3)
+        Player.AddPerk(V4F_Intelligence4)
         Player.AddPerk(V4F_Intelligence5)
+        Player.AddSpell(V4F_Intelligence)
+    elseif topFat >= 0.8
+        Player.AddPerk(V4F_Intelligence1)
+        Player.AddPerk(V4F_Intelligence2)
+        Player.AddPerk(V4F_Intelligence3)
+        Player.AddPerk(V4F_Intelligence4)
+        Player.RemovePerk(V4F_Intelligence5)
+        Player.AddSpell(V4F_Intelligence)   
+    elseif topFat >= 0.6
+        Player.AddPerk(V4F_Intelligence1)
+        Player.AddPerk(V4F_Intelligence2)
+        Player.AddPerk(V4F_Intelligence3)
+        Player.RemovePerk(V4F_Intelligence4)
+        Player.RemovePerk(V4F_Intelligence5)
+        Player.AddSpell(V4F_Intelligence)
+    elseif topFat >= 0.4
+        Player.AddPerk(V4F_Intelligence1)
+        Player.AddPerk(V4F_Intelligence2)
+        Player.RemovePerk(V4F_Intelligence3)
+        Player.RemovePerk(V4F_Intelligence4)
+        Player.RemovePerk(V4F_Intelligence5)
+        Player.AddSpell(V4F_Intelligence)
+    elseif topFat >= 0.2
+        Player.AddPerk(V4F_Intelligence1)
+        Player.RemovePerk(V4F_Intelligence2)
+        Player.RemovePerk(V4F_Intelligence3)
+        Player.RemovePerk(V4F_Intelligence4)
+        Player.RemovePerk(V4F_Intelligence5)
+        Player.AddSpell(V4F_Intelligence)
+    else
+        Player.RemovePerk(V4F_Intelligence1)
+        Player.RemovePerk(V4F_Intelligence2)
+        Player.RemovePerk(V4F_Intelligence3)
+        Player.RemovePerk(V4F_Intelligence4)
+        Player.RemovePerk(V4F_Intelligence5)
+        Player.RemoveSpell(V4F_Intelligence)
     endif
 endfunction

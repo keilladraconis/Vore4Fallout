@@ -1,5 +1,6 @@
 Scriptname V4F_PerceptionQ extends Quest
 V4F_VoreCore Property VoreCore Auto Const Mandatory
+Spell Property V4F_Perception Auto Const
 Perk Property V4F_Perception1 Auto Const
 Perk Property V4F_Perception2 Auto Const
 Perk Property V4F_Perception3 Auto Const
@@ -166,24 +167,47 @@ function PerkDecay(float time)
 endfunction
 
 function ApplyPerks()
-    Player.RemovePerk(V4F_Perception1)
-    Player.RemovePerk(V4F_Perception2)
-    Player.RemovePerk(V4F_Perception3)
-    Player.RemovePerk(V4F_Perception4)
-    Player.RemovePerk(V4F_Perception5)
-    if PerkProgress >= 1.0
-        Player.AddPerk(V4F_Perception1)
-    endif
-    if PerkProgress >= 2.0
-        Player.AddPerk(V4F_Perception2)
-    endif
-    if PerkProgress >= 3.0
-        Player.AddPerk(V4F_Perception3)
-    endif
-    if PerkProgress >= 4.0
-        Player.AddPerk(V4F_Perception4)
-    endif
     if PerkProgress >= 5.0
+        Player.AddPerk(V4F_Perception1)
+        Player.AddPerk(V4F_Perception2)
+        Player.AddPerk(V4F_Perception3)
+        Player.AddPerk(V4F_Perception4)
         Player.AddPerk(V4F_Perception5)
+        Player.AddSpell(V4F_Perception)
+    elseif PerkProgress >= 4.0
+        Player.AddPerk(V4F_Perception1)
+        Player.AddPerk(V4F_Perception2)
+        Player.AddPerk(V4F_Perception3)
+        Player.AddPerk(V4F_Perception4)
+        Player.RemovePerk(V4F_Perception5)   
+        Player.AddSpell(V4F_Perception)
+    elseif PerkProgress >= 3.0
+        Player.AddPerk(V4F_Perception1)
+        Player.AddPerk(V4F_Perception2)
+        Player.AddPerk(V4F_Perception3)
+        Player.RemovePerk(V4F_Perception4)
+        Player.RemovePerk(V4F_Perception5)
+        Player.AddSpell(V4F_Perception)
+    elseif PerkProgress >= 2.0
+        Player.AddPerk(V4F_Perception1)
+        Player.AddPerk(V4F_Perception2)
+        Player.RemovePerk(V4F_Perception3)
+        Player.RemovePerk(V4F_Perception4)
+        Player.RemovePerk(V4F_Perception5)
+        Player.AddSpell(V4F_Perception)
+    elseif PerkProgress >= 1.0
+        Player.AddPerk(V4F_Perception1)
+        Player.RemovePerk(V4F_Perception2)
+        Player.RemovePerk(V4F_Perception3)
+        Player.RemovePerk(V4F_Perception4)
+        Player.RemovePerk(V4F_Perception5)
+        Player.AddSpell(V4F_Perception)
+    else
+        Player.RemovePerk(V4F_Perception1)
+        Player.RemovePerk(V4F_Perception2)
+        Player.RemovePerk(V4F_Perception3)
+        Player.RemovePerk(V4F_Perception4)
+        Player.RemovePerk(V4F_Perception5)
+        Player.RemoveSpell(V4F_Perception)
     endif
 endfunction

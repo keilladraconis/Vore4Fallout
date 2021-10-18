@@ -1,0 +1,22 @@
+{
+    // created by vscode papyrus-lang papyrus.fallout4.generateProject
+    "folders": [
+        {
+            "path": "."
+        },
+        {
+            "path": "..\\..\\Decompiled"
+        },
+        {
+            "path": "..\\..\\..\\..\\..\\Program Files (x86)\\Steam\\steamapps\\common\\Fallout 4\\Data\\Scripts\\Source\\Base"
+        },
+        {
+            "path": "..\\..\\..\\Documents\\My Games\\Fallout4"
+        }
+    ],
+    "settings": {
+        "papyrus.fallout4.enabled": true,
+        "papyrus.skyrim.enabled": false,
+        "papyrus.skyrimSpecialEdition.enabled": false
+    }
+}

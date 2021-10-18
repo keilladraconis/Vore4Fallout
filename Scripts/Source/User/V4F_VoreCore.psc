@@ -318,7 +318,7 @@ endfunction
 float function ComputeMetabolicRate(float time)
     float expRate
     if PlayerVore.fat > 1.0
-        expRate = 1 + Math.pow(PlayerVore.fat - 1.0, 2) * 800 ; Change this last factor to increase the scaling of the exponential function. at 800 you burn about a million calories every 10 minutes at fat 6
+        expRate = 1 + Math.pow(PlayerVore.fat, 2) * 800 ; Change this last factor to increase the scaling of the exponential function. at 800 you burn about a million calories every 10 minutes at fat 6
     else
         expRate = 1.0
     endif

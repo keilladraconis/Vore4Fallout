@@ -1,5 +1,6 @@
 Scriptname V4F_StrengthQ extends Quest
 V4F_VoreCore Property VoreCore Auto Const Mandatory
+Spell Property V4F_Strength Auto Const
 Perk Property V4F_Strength1 Auto Const
 Perk Property V4F_Strength2 Auto Const
 Perk Property V4F_Strength3 Auto Const
@@ -137,24 +138,47 @@ function PerkDecay(float time)
 endfunction
 
 function ApplyPerks(float muscle)
-    Player.RemovePerk(V4F_Strength1)
-    Player.RemovePerk(V4F_Strength2)
-    Player.RemovePerk(V4F_Strength3)
-    Player.RemovePerk(V4F_Strength4)
-    Player.RemovePerk(V4F_Strength5)
-    if muscle >= 0.2
+    if PerkProgress >= 5.0
         Player.AddPerk(V4F_Strength1)
-    endif
-    if muscle >= 0.4
         Player.AddPerk(V4F_Strength2)
-    endif
-    if muscle >= 0.6
         Player.AddPerk(V4F_Strength3)
-    endif
-    if muscle >= 0.8
         Player.AddPerk(V4F_Strength4)
-    endif
-    if muscle >= 1.0
         Player.AddPerk(V4F_Strength5)
+        Player.AddSpell(V4F_Strength)
+    elseif PerkProgress >= 4.0
+        Player.AddPerk(V4F_Strength1)
+        Player.AddPerk(V4F_Strength2)
+        Player.AddPerk(V4F_Strength3)
+        Player.AddPerk(V4F_Strength4)
+        Player.RemovePerk(V4F_Strength5)   
+        Player.AddSpell(V4F_Strength)
+    elseif PerkProgress >= 3.0
+        Player.AddPerk(V4F_Strength1)
+        Player.AddPerk(V4F_Strength2)
+        Player.AddPerk(V4F_Strength3)
+        Player.RemovePerk(V4F_Strength4)
+        Player.RemovePerk(V4F_Strength5)
+        Player.AddSpell(V4F_Strength)
+    elseif PerkProgress >= 2.0
+        Player.AddPerk(V4F_Strength1)
+        Player.AddPerk(V4F_Strength2)
+        Player.RemovePerk(V4F_Strength3)
+        Player.RemovePerk(V4F_Strength4)
+        Player.RemovePerk(V4F_Strength5)
+        Player.AddSpell(V4F_Strength)
+    elseif PerkProgress >= 1.0
+        Player.AddPerk(V4F_Strength1)
+        Player.RemovePerk(V4F_Strength2)
+        Player.RemovePerk(V4F_Strength3)
+        Player.RemovePerk(V4F_Strength4)
+        Player.RemovePerk(V4F_Strength5)
+        Player.AddSpell(V4F_Strength)
+    else
+        Player.RemovePerk(V4F_Strength1)
+        Player.RemovePerk(V4F_Strength2)
+        Player.RemovePerk(V4F_Strength3)
+        Player.RemovePerk(V4F_Strength4)
+        Player.RemovePerk(V4F_Strength5)
+        Player.RemoveSpell(V4F_Strength)
     endif
 endfunction
