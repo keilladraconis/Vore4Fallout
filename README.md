@@ -95,3 +95,5 @@ CreationKit.exe -GenerateAnimInfo:Vore4Fallout.esp .\Data .\Data
 Then copy the resulting AnimTextData found in Data\Meshes to this repo
 
 ## Vore notes
+
+Heh, if you eat Kellogg you can't go get a piece of his brain later... Um...

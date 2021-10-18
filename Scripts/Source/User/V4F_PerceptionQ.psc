@@ -12,16 +12,7 @@ Perk Property V4F_VoreBurden3 Auto Const
 Perk Property V4F_VoreBurden4 Auto Const
 Perk Property V4F_VoreBurden5 Auto Const
 
-; Timer hacks
-bool timersInitialized
-int RealTimerID_HackClockSyncer = 5 const
-int TIMER_main = 1 const
-int TIMER_cooldown = 2 const
-float HackClockLowestTime
-float GameTimeElapsed
-
 float PerkProgress = 0.0
-
 float healthRestore = 0.005 ; 5 hp per 1000 calories 
 float digestionRate = 0.00011
 float exerciseBoost = 0.0
@@ -37,12 +28,13 @@ function Updateversion(int v)
         PerkDecay = 0.001
         PerkRate = 0.2
         PerceptionAV = Game.GetPerceptionAV()
+        RegisterForCustomEvent(VoreCore, "VoreTimeEvent")
         version = v
     endif
 endfunction
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
-	Updateversion(8)
+	Updateversion(9)
     GotoState("")
 EndEvent
 
@@ -55,10 +47,7 @@ Event OnInit()
     RegisterForRemoteEvent(Player, "OnPlayerLoadGame")
     RegisterForRemoteEvent(Player, "OnDifficultyChanged")
     UpdateDifficultyScaling(Game.GetDifficulty())
-    ; HACK! The game clock gets adjusted early game to set lighting and such.
-    ; This will fix out clocks from getting out of alignment on new game start.
-    timersInitialized = false
-    StartTimer(1.0, RealTimerID_HackClockSyncer)
+    RegisterForCustomEvent(VoreCore, "VoreTimeEvent")
 EndEvent
 
 float difficultyScaling
@@ -77,34 +66,11 @@ endfunction
 ; ======
 ; EVENTS
 ; ======
-Event OnTimer(int timer)
-    if timer == RealTimerID_HackClockSyncer
-        float currentGameTime = Utility.GetCurrentGameTime()
-        if !timersInitialized || currentGameTime < HackClockLowestTime
-            GameTimeElapsed = currentGameTime
-            HackClockLowestTime = currentGameTime
-            StartTimerGameTime(10.0/60.0, 1)
-            timersInitialized = true
-        endif
-        
-        if currentGameTime <= HackClockLowestTime + 0.05
-            StartTimer(30.0, RealTimerID_HackClockSyncer)
-            Debug.Trace("PerceptionQ Clock Sync @ " + currentGameTime + " # " + HackClockLowestTime)
-        endif
-    endif
+Event V4F_VoreCore.VoreTimeEvent(V4F_VoreCore akSender, Var[] akArgs)
+    float timeDelta = akArgs[0] as float
+    PerkDecay(timeDelta / 3600.0)
+    Debug.Trace("AgilityQ:" + PerkProgress)
 EndEvent
-
-Event OnTimerGameTime(int timer)
-    if timer == TIMER_main
-        ; Time is reported as a floating point number where 1 is a whole day. 1 hour is 1/24 expressed as a decimal. (1.0 / 24.0) * 60 * 60 = 150
-        float timeDelta = (Utility.GetCurrentGameTime() - GameTimeElapsed) / (1.0 / 24.0) * 60 * 60
-        GameTimeElapsed = Utility.GetCurrentGameTime()
-        PerkDecay(timeDelta / 3600.0)
-        StartTimerGameTime(10.0/60.0, 1)
-    elseif timer == TIMER_cooldown
-        GotoState("")
-    endif
-endevent
 ; ========
 ; Public
 ; ========
@@ -116,7 +82,7 @@ function Increment()
     if PerkProgress > 7.5
         PerkProgress = 7.5
     endif
-    StartTimerGameTime(1.0, TIMER_cooldown)
+    StartTimerGameTime(1.0)
 endfunction
 
 state Cooldown

@@ -12,13 +12,7 @@ Perk Property V4F_VoreBurden3 Auto Const
 Perk Property V4F_VoreBurden4 Auto Const
 Perk Property V4F_VoreBurden5 Auto Const
 
-; Timer hacks
-bool timersInitialized
-int RealTimerID_HackClockSyncer = 5 const
-int TIMER_main = 1 const
 int TIMER_cooldown = 2 const
-float HackClockLowestTime
-float GameTimeElapsed
 
 float PerkProgress = 0.0
 float previousTime
@@ -30,12 +24,13 @@ function Updateversion(int v)
     if v > version
         PerkRate = 0.2
         RegisterForCustomEvent(VoreCore, "BodyMassEvent")
+        RegisterForCustomEvent(VoreCore, "VoreTimeEvent")
         version = v
     endif
 endfunction
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
-	Updateversion(6)
+	Updateversion(7)
     GotoState("")
 EndEvent
 
@@ -47,14 +42,10 @@ ActorValue AgilityAV
 Event OnInit()
     Player = Game.GetPlayer()
     AgilityAV = Game.GetAgilityAV()
-    RegisterForPlayerTeleport()
     RegisterForRemoteEvent(Player, "OnPlayerLoadGame")
     RegisterForRemoteEvent(Player, "OnDifficultyChanged")
     UpdateDifficultyScaling(Game.GetDifficulty())
-    ; HACK! The game clock gets adjusted early game to set lighting and such.
-    ; This will fix out clocks from getting out of alignment on new game start.
-    timersInitialized = false
-    StartTimer(1.0, RealTimerID_HackClockSyncer)
+    RegisterForCustomEvent(VoreCore, "VoreTimeEvent")
 EndEvent
 
 float difficultyScaling
@@ -73,44 +64,14 @@ endfunction
 ; ======
 ; EVENTS
 ; ======
-Event OnTimer(int timer)
-    if timer == RealTimerID_HackClockSyncer
-        float currentGameTime = Utility.GetCurrentGameTime()
-        if !timersInitialized || currentGameTime < HackClockLowestTime
-            GameTimeElapsed = currentGameTime
-            HackClockLowestTime = currentGameTime
-            StartTimerGameTime(10.0/60.0, 1)
-            timersInitialized = true
-        endif
-        
-        if currentGameTime <= HackClockLowestTime + 0.05
-            StartTimer(30.0, RealTimerID_HackClockSyncer)
-            Debug.Trace("AgilityQ Clock Sync @ " + currentGameTime + " # " + HackClockLowestTime)
-        endif
-    endif
-EndEvent
-
 Event OnTimerGameTime(int timer)
-    if timer == TIMER_main
-        ; Time is reported as a floating point number where 1 is a whole day. 1 hour is 1/24 expressed as a decimal. (1.0 / 24.0) * 60 * 60 = 150
-        float timeDelta = (Utility.GetCurrentGameTime() - GameTimeElapsed) / (1.0 / 24.0) * 60 * 60
-        GameTimeElapsed = Utility.GetCurrentGameTime()
-
-        PerkDecay(timeDelta / 3600.0)
-        Debug.Trace("AgilityQ:" + PerkProgress)
-        StartTimerGameTime(10.0/60.0, 1)
-    elseif timer == TIMER_cooldown
-        GotoState("")
-    endif
+    GotoState("")
 endevent
 
-Event OnPlayerTeleport()
-    float timeDelta = (Utility.GetCurrentGameTime() - GameTimeElapsed) / (1.0 / 24.0) * 60 * 60
-    Debug.Trace("AgilityQ: Teleport TimeDelta: " + timeDelta)
-    if timeDelta > 3600.0
-        GotoState("")
-        Increment(timeDelta / 3600.0)
-    endif
+Event V4F_VoreCore.VoreTimeEvent(V4F_VoreCore akSender, Var[] akArgs)
+    float timeDelta = akArgs[0] as float
+    PerkDecay(timeDelta / 3600.0)
+    Debug.Trace("AgilityQ:" + PerkProgress)
 EndEvent
 
 ; ========
@@ -162,35 +123,35 @@ function ApplyPerks()
         Player.AddPerk(V4F_Agility3)
         Player.AddPerk(V4F_Agility4)
         Player.AddPerk(V4F_Agility5)
-        Player.AddSpell(V4F_Agility)
+        Player.AddSpell(V4F_Agility, false)
     elseif PerkProgress >= 4.0
         Player.AddPerk(V4F_Agility1)
         Player.AddPerk(V4F_Agility2)
         Player.AddPerk(V4F_Agility3)
         Player.AddPerk(V4F_Agility4)
         Player.RemovePerk(V4F_Agility5)   
-        Player.AddSpell(V4F_Agility)
+        Player.AddSpell(V4F_Agility, false)
     elseif PerkProgress >= 3.0
         Player.AddPerk(V4F_Agility1)
         Player.AddPerk(V4F_Agility2)
         Player.AddPerk(V4F_Agility3)
         Player.RemovePerk(V4F_Agility4)
         Player.RemovePerk(V4F_Agility5)
-        Player.AddSpell(V4F_Agility)
+        Player.AddSpell(V4F_Agility, false)
     elseif PerkProgress >= 2.0
         Player.AddPerk(V4F_Agility1)
         Player.AddPerk(V4F_Agility2)
         Player.RemovePerk(V4F_Agility3)
         Player.RemovePerk(V4F_Agility4)
         Player.RemovePerk(V4F_Agility5)
-        Player.AddSpell(V4F_Agility)
+        Player.AddSpell(V4F_Agility, false)
     elseif PerkProgress >= 1.0
         Player.AddPerk(V4F_Agility1)
         Player.RemovePerk(V4F_Agility2)
         Player.RemovePerk(V4F_Agility3)
         Player.RemovePerk(V4F_Agility4)
         Player.RemovePerk(V4F_Agility5)
-        Player.AddSpell(V4F_Agility)
+        Player.AddSpell(V4F_Agility, false)
     else
         Player.RemovePerk(V4F_Agility1)
         Player.RemovePerk(V4F_Agility2)

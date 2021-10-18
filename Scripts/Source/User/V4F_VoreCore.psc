@@ -140,6 +140,7 @@ CustomEvent VoreEvent
 CustomEvent BodyMassEvent
 CustomEvent BodyShapeEvent
 CustomEvent OnDigest
+CustomEvent VoreTimeEvent
 
 Actor[] BellyContent
 bool isProcessingVore
@@ -195,6 +196,9 @@ Event OnTimerGameTime(int timer)
         GameTimeElapsed = Utility.GetCurrentGameTime()
         Update(timeDelta)
         ProcessVore(timeDelta)
+        Var[] args = new Var[1]
+        args[0] = timeDelta
+        SendCustomEvent("VoreTimeEvent", args)
         StartTimerGameTime(10.0/60.0, 1)
     endif
 endevent
@@ -254,6 +258,11 @@ endfunction
 function HandleSwallow(Actor prey)
     if BellyContent == NONE
         BellyContent = new Actor[0]
+    endif
+
+    ; Not allowed to eat essential characters. Sometimes they talk while bleeding out, or you need to harvest their organs for the plot.
+    if prey.IsEssential()
+        return
     endif
 
     if prey.GetValuePercentage(HealthAV) > StrengthQ.HealthPctLimit()
@@ -463,7 +472,7 @@ function UpdateBody()
         PlayerBody.breastsT   = 0.0
         PlayerBody.breastsD   = 1.0 - (PlayerVore.topFat - 1.0)
         PlayerBody.breastsF   = 1.0 - (PlayerVore.topFat - 1.0)
-        PlayerBody.UKTop = (PlayerVore.topFat - 1.0) / 4.0
+        PlayerBody.UKTop = (PlayerVore.topFat - 1.0) / 2.0
     endif
 
     if PlayerVore.bottomFat >= 0.0 && PlayerVore.bottomFat <= 0.1
@@ -537,7 +546,7 @@ function UpdateBody()
         PlayerBody.buttCWaist = 1.0 - (PlayerVore.bottomFat - 1.0)
         PlayerBody.buttApple  = 1.0 - (PlayerVore.bottomFat - 1.0)
         PlayerBody.buttRound  = 1.0 - (PlayerVore.bottomFat - 1.0)
-        PlayerBody.UKBottom   = (PlayerVore.bottomFat - 1.0) / 4.0
+        PlayerBody.UKBottom   = (PlayerVore.bottomFat - 1.0) / 2.0
     endif
 endfunction
 
